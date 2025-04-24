@@ -3,7 +3,7 @@
 [Ollama](https://ollama.com/) allows users to run open-source [large language models (LLMs)](https://aws.amazon.com/what-is/large-language-model/), offering a streamlined command line experience for interacting with and experimenting with these models. [Open WebUI](https://openwebui.com/) is an extensible, feature-rich, and user-friendly web interface to Ollama.  For best performance, a [GPU](https://github.com/ollama/ollama/blob/main/docs/gpu.md) is required.
 
 
-This repo provides a [AWS CloudFormation](https://aws.amazon.com/cloudformation/) template to provision [NVIDIA GPU EC2 instance](https://aws.amazon.com/ec2/instance-types/#Accelerated_Computing) with Ollama and Open WebUI), and include access to [Amazon Bedrock](https://aws.amazon.com/bedrock/) foundation models (FMs). Solution can be deployed as a website for LLM interaction (through Open WebUI) or for application development.
+This repo provides a [AWS CloudFormation](https://aws.amazon.com/cloudformation/) template to provision [NVIDIA GPU EC2 instance](https://aws.amazon.com/ec2/instance-types/#Accelerated_Computing) with Ollama and Open WebUI, and include access to [Amazon Bedrock](https://aws.amazon.com/bedrock/) foundation models (FMs). Solution can be deployed as a website for LLM interaction (through Open WebUI) or for application development.
 
 
 ## Architecture Diagram
