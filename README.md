@@ -1,9 +1,9 @@
 ## Ollama-Server
 
-[Ollama](https://ollama.com/) allows users to easily run open-source [Large Language Models (LLMs)](https://aws.amazon.com/what-is/large-language-model/), offering a streamlined command line experience for interacting with and experimenting with these models. [Open WebUI](https://openwebui.com/), formerly known as Ollama WebUI, is an extensible, feature-rich, and user-friendly web interface to Ollama.  For best performance, a [GPU](https://github.com/ollama/ollama/blob/main/docs/gpu.md) is required.
+[Ollama](https://ollama.com/) allows users to run open-source [large language models (LLMs)](https://aws.amazon.com/what-is/large-language-model/), offering a streamlined command line experience for interacting with and experimenting with these models. [Open WebUI](https://openwebui.com/) is an extensible, feature-rich, and user-friendly web interface to Ollama.  For best performance, a [GPU](https://github.com/ollama/ollama/blob/main/docs/gpu.md) is required.
 
 
-This repo provides a [AWS CloudFormation](https://aws.amazon.com/cloudformation/) template to provision [NVIDIA GPU EC2 instance](https://aws.amazon.com/ec2/instance-types/#Accelerated_Computing) with [Ollama](https://ollama.com/) and [Open WebUI](https://openwebui.com/), and include access to [Amazon Bedrock](https://aws.amazon.com/bedrock/) foundation models. The EC2 instance can be used as GenAI chat interface, or for application development.
+This repo provides a [AWS CloudFormation](https://aws.amazon.com/cloudformation/) template to provision [NVIDIA GPU EC2 instance](https://aws.amazon.com/ec2/instance-types/#Accelerated_Computing) with Ollama and Open WebUI), and include access to [Amazon Bedrock](https://aws.amazon.com/bedrock/) foundation models (FMs). Solution can be deployed as a website for LLM interaction (through Open WebUI) or for application development.
 
 
 ## Architecture Diagram
@@ -15,8 +15,8 @@ Template provides the following features
 - NVIDIA GPU EC2 instance
 - [Generative AI](https://aws.amazon.com/ai/generative-ai/) related applications
   - [Ollama](https://ollama.com/) for running and managing LLMs
-  - [LiteLLM proxy server](https://www.litellm.ai/) provides [Amazon Bedrock](https://aws.amazon.com/bedrock/) model access to Open WebUI. *EC2 instance can be deployed in AWS Region that does not support Bedrock*
-  - [Open WebUI](https://openwebui.com/) web interface for interacting with [local Ollama managed](https://ollama.com/library) and [remote Bedrock](https://docs.aws.amazon.com/bedrock/latest/userguide/models-supported.html) foundation models
+  - [LiteLLM proxy](https://www.litellm.ai/) to provide [Amazon Bedrock](https://aws.amazon.com/bedrock/) model access. EC2 can be deployed in AWS Region that does not support Bedrock
+  - [Open WebUI](https://openwebui.com/) web interface for interacting with [local Ollama](https://ollama.com/library) and [remote Bedrock](https://docs.aws.amazon.com/bedrock/latest/userguide/models-supported.html) models
 - Remote Administration
   - [Amazon DCV](https://aws.amazon.com/hpc/dcv/) remote display protocol server for graphical desktop access (optional)
   - [SSM Session Manager](https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager.html)  secure shell access 
@@ -28,7 +28,7 @@ Template provides the following features
   - [Amazon CloudFront](https://aws.amazon.com/cloudfront/) CDN with support for [VPC Origin](https://aws.amazon.com/blogs/networking-and-content-delivery/introducing-cloudfront-virtual-private-cloud-vpc-origins-shield-your-web-applications-from-public-internet/) (optional)
 
 ## Notice
-Although this repository is released under the [MIT-0](LICENSE) license, its CloudFormation template uses features third party components which are released under the following respective licenses
+Although this repository is released under the [MIT-0](LICENSE) license, its CloudFormation template uses third party components which are released under the following respective licenses
 
 - [Ollama](https://github.com/ollama/ollama): [MIT](https://github.com/ollama/ollama/blob/main/LICENSE) license
 - [Open WebUI](https://github.com/open-webui/open-webui): [BSD-3-Clause](https://github.com/open-webui/open-webui/blob/main/LICENSE) license
@@ -38,7 +38,7 @@ Although this repository is released under the [MIT-0](LICENSE) license, its Clo
 Usage of [Amazon DCV](https://aws.amazon.com/hpc/dcv/) indicates acceptance of [DCV EULA](https://www.amazondcv.com/eula.html).
 By using the template, you accept license agreement of all software that is installed in the EC2 instance. 
 
-### Requirements
+## Requirements
 - EC2 instance must be provisioned in a subnet with IPv4 internet connectivity.
 - Check the [On-Demand Instance quota](https://docs.aws.amazon.com/ec2/latest/instancetypes/ec2-instance-quotas.html#on-demand-instance-quotas) value of your desired instance type and request quota increase where necessary.  
 - To use [Application Load Balancer (ALB)](https://aws.amazon.com/elasticloadbalancing/application-load-balancer/) with HTTPS, either [request a public certificate](https://docs.aws.amazon.com/acm/latest/userguide/acm-public-certificates.html) or [import a certificate](https://docs.aws.amazon.com/acm/latest/userguide/import-certificate.html) into [AWS Certificate Manager](https://aws.amazon.com/certificate-manager/).
@@ -49,18 +49,25 @@ Download [Ollama-Server.yaml](Ollama-Server.yaml) file.
 
 Login to AWS [CloudFormation console](https://console.aws.amazon.com/cloudformation/home#/stacks/create/template). Choose **Create Stack**, **Upload a template file**, **Choose File**, select your .YAML file and choose **Next**. Enter a **Stack name** and specify parameters values.
 
+### CloudFormation Parameters
+In most cases, the default values are sufficient. Do verify instance type [availability](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-discovery.html). You will need to specify values for `vpcID`, `subnetID`, `ec2KeyPair` and `albSubnets`. For security reasons, configure `ingressIPv4` and `ingressIPv6` to your IP address.
+
+
+In most cases, the default values 
+
+
 Ollama
 - `installWebUI`: install Open WebUI. Default is `Yes`
-- `bedrockRegion`: [AWS Region](https://docs.aws.amazon.com/bedrock/latest/userguide/models-regions.html) to use for Bedrock model access
-    - [Access](https://docs.aws.amazon.com/bedrock/latest/userguide/model-access.html) to Amazon Bedrock foundation models is not granted by default. You must [request access](https://docs.aws.amazon.com/bedrock/latest/userguide/model-access-modify.html).
+- `bedrockRegion`: [AWS Region](https://docs.aws.amazon.com/bedrock/latest/userguide/models-regions.html) to use for Bedrock model access. Default is `us-west-2 (US West - Oregon)`
+  - [Access](https://docs.aws.amazon.com/bedrock/latest/userguide/model-access.html) to Amazon Bedrock foundation models is not granted by default. Do [request access](https://docs.aws.amazon.com/bedrock/latest/userguide/model-access-modify.html) in selected Region before using.
 - `r53ZoneID` : [Amazon Route 53](https://aws.amazon.com/route53/) hosted zone ID to grant [EC2 IAM Role](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/iam-roles-for-amazon-ec2.html) access to. To be used for [Route 53 DNS-01 challenge](https://certbot-dns-route53.readthedocs.io/en/stable/) by [Certbot](https://eff-certbot.readthedocs.io/en/stable/intro.html) (or other [ACME clients](https://letsencrypt.org/docs/client-options/)) to obtain HTTPS certificates for EC2 web server. Permission is restricted to **_acme-challenge.\*** TXT DNS records using [resource record set permissions](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/resource-record-sets-permissions.html). Set empty string for no access. Default is `*` which will grant access to all Route 53 zones in your AWS account.
   - *Route 53 must be [configured](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/dns-configuring.html) as DNS service for your domain.*
 
 EC2 Instance
 - `ec2Name`: EC2 instance name
 - `ec2KeyPair`: [EC2 key pair](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-key-pairs.html) name. [Create key pair](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/create-key-pairs.html) if necessary
-- `osVersion` : `Ubuntu 22.04 (arm64)` or `Ubuntu 22.04 (x86_64)` [Deep Learning AMI](https://aws.amazon.com/ai/machine-learning/amis/). Default is `Ubuntu 22.04 (x86_64)`.
-- `instanceType`: EC2 [instance types](https://aws.amazon.com/ec2/instance-types/). Do ensure type matches processor architecture. Default is `g4dn.xlarge`
+- `osVersion` : Ubuntu/Ubuntu Pro 24.04/22.04 (x86_64/arm64). Default is `Ubuntu 24.04 (x86_64)`.
+- `instanceType`: NVIDIA GPU EC2 [instance types](https://aws.amazon.com/ec2/instance-types/). Do ensure type matches processor architecture (x86_64 or arm64). Default is `g4dn.xlarge`
 - `ec2TerminationProtection`: enable [EC2 termination protection](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/Using_ChangingDisableAPITermination.html) to prevent accidental deletion. Default is `Yes`
 
 EC2 Network
@@ -69,13 +76,25 @@ EC2 Network
 - `displayPublicIP`: set this to `No` if your EC2 instance will not receive [public IP address](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-instance-addressing.html#concepts-public-addresses). EC2 private IP will be displayed in CloudFormation Outputs section instead. Default is `Yes`
 - `assignStaticIP`: associates a static public IPv4 address using [Elastic IP address](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/elastic-ip-addresses-eip.html). Default is `Yes`
 
+EC2 Remote Administration
+- `ingressIPv4`: allowed IPv4 source prefix to remote administration services, e.g. `1.2.3.4/32`. You can get your source IP from [https://checkip.amazonaws.com](https://checkip.amazonaws.com). Default is `0.0.0.0/0`. 
+- `ingressIPv6`: allowed IPv6 source prefix to remote administration services. Use `::1/128` to block all incoming IPv6 access. Default is `::/0`
+- `allowSSHport`: allow inbound SSH. Option does not affect [EC2 Instance Connect](https://aws.amazon.com/blogs/compute/new-using-amazon-ec2-instance-connect-for-ssh-access-to-your-ec2-instances/) access. Default is `Yes`
+- `installDCV`: install graphical desktop environment and [DCV](https://aws.amazon.com/hpc/dcv/) server. Default is `No`
+
+*SSH and DCV inbound access are restricted to `ingressIPv4` and `ingressIPv6` IP prefixes.* 
+
+EBS volume
+- `volumeSize`: [Amazon EBS](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/AmazonEBS.html) volume size
+- `volumeType`: [EBS General Purpose Volume](https://aws.amazon.com/ebs/general-purpose/) type
 
 Application Load Balancer (ALB)
 - `enableALB`: deploy [Application Load Balancer](https://aws.amazon.com/elasticloadbalancing/application-load-balancer/) with EC2 instance as target. Associated charges are listed on [Elastic Load Balancing pricing](https://aws.amazon.com/elasticloadbalancing/pricing/) page. Default is `No`
 - `albSubnets`: subnets for ALB. Select at least 2 AZ subnets in EC2 VPC
-     - Select a subnet if `enableALB` is `No`
+  - *Select a subnet if `enableALB` is `No`*
 - `albScheme`: either `internet-facing` or `internal`. An internet-facing load balancer routes requests from clients to targets over the internet. An internal load balancer routes requests to targets using private IP addresses. Default is `internet-facing`
 - `albIpAddressType`: [IP address type](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/application-load-balancers.html#ip-address-type), either `IPv4`, `IPv4-and-IPv6` or `IPv6`. Default is `IPv4`
+
 - `albLogging`: enable [access logging](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-access-logs.html) to S3 bucket. Default is `No`
   
 
@@ -92,25 +111,17 @@ Amazon CloudFront
 - `originType`: either `Custom Origin` or `VPC Origin`. Most [AWS Regions](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/private-content-vpc-origins.html#vpc-origins-supported-regions) support [VPC Origins](https://aws.amazon.com/blogs/networking-and-content-delivery/introducing-cloudfront-virtual-private-cloud-vpc-origins-shield-your-web-applications-from-public-internet/), which allow CloudFront to deliver content even if your EC2 instance is in a VPC private subnet. Default is `Custom Origin` 
 - `cloudFrontLogging`: enable CloudFront [standard logging](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/AccessLogs.html) to S3 bucket. Default is `No`
 
-EC2 Remote Administration
-- `ingressIPv4`: allowed IPv4 source prefix to remote administration services, e.g. `1.2.3.4/32`. You can get your source IP from [https://checkip.amazonaws.com](https://checkip.amazonaws.com). Default is `0.0.0.0/0`. 
-- `ingressIPv6`: allowed IPv6 source prefix to remote administration services. Use `::1/128` to block all incoming IPv6 access. Default is `::/0`
-- `allowSSHport`: allow inbound SSH. Option does not affect [EC2 Instance Connect](https://aws.amazon.com/blogs/compute/new-using-amazon-ec2-instance-connect-for-ssh-access-to-your-ec2-instances/) access. Default is `Yes`
-- `installDCV`: install graphical desktop environment and [DCV](https://aws.amazon.com/hpc/dcv/) server. Default is `Yes`
-
-*SSH, DCV and Webmin inbound access are restricted to `ingressIPv4` and `ingressIPv6` IP prefixes.* 
-
- 
-EBS
-- `volumeSize`: [Amazon EBS](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/AmazonEBS.html) volume size
-- `volumeType`: [EBS General Purpose Volume](https://aws.amazon.com/ebs/general-purpose/) type
-
-
 AWS Backup
 - `enableBackup` : EC2 data protection with [AWS Backup](https://aws.amazon.com/backup/). Associated charges are listed on [AWS Backup pricing](https://aws.amazon.com/backup/pricing) page. Default is `Yes`
 - `scheduleExpression`: start time of backup using [CRON expression](https://en.wikipedia.org/wiki/Cron#CRON_expression). Default is 1 am
 - `scheduleExpressionTimezone`: timezone in which the schedule expression is set. Default is `Etc/UTC`
 - `deleteAfterDays`:  number of days after backup creation that a recovery point is deleted. Default is `35`
+
+
+Continue **Next** with [Configure stack options](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cfn-console-add-tags.html), [Review Stack](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cfn-using-console-create-stack-review.html), and click **Submit** to launch your stack. 
+
+It may take more than 20 minutes to provision the EC2 instance. After your stack has been successfully created, its status changes to **CREATE_COMPLETE**.
+
 
 ### CloudFormation Outputs
 The following are available on **Outputs** section 
@@ -124,7 +135,7 @@ If `installWebUI` is `Yes`
 - `WebUrl`: Open WebUI URL
 
 If `installDCV` is `Yes`
-- `DCVwebConsole` : DCV web browser client URL. Native DCV clients can be downloaded from [https://www.amazondcv.com/](https://www.amazondcv.com/). Login as the user specified in *Description* field.
+- `DCVwebConsole` : DCV web browser client URL. Native DCV clients can be downloaded from [https://www.amazondcv.com/](https://www.amazondcv.com/). Use SSM session manager or EC2 instance connect to set `ubuntu` user password, and login as ubuntu.
 
 
 If `enableALB` is `Yes`
@@ -148,7 +159,7 @@ To troubleshoot any installation issue, you can view contents of the following l
 ## Using Ollama and Open WebUI
 
 ### Managing models
-Refer to [Starting With Ollama](https://docs.openwebui.com/getting-started/quick-start/starting-with-ollama/) for steps to manage models. Ollama [site](https://ollama.com/search) provides a listing of available language models and their size (e.g. [DeepSeek](https://ollama.com/library/deepseek-r1/tags)). For best performance, ensure that model size is less than GPU memory size. You can refer to [EC2 Accelerated Computing page](https://aws.amazon.com/ec2/instance-types/#Accelerated_Computing) for GPU memory size specifications.
+Refer to [Starting With Ollama](https://docs.openwebui.com/getting-started/quick-start/starting-with-ollama/) for guidance to manage models. Ollama [site](https://ollama.com/search) provides a listing of available language models and their size (e.g. [DeepSeek](https://ollama.com/library/deepseek-r1/tags)). For best performance, ensure that model size is less than GPU memory size. You can refer to [EC2 Accelerated Computing page](https://aws.amazon.com/ec2/instance-types/#Accelerated_Computing) for GPU memory size specifications.
 
 ### Change EC2 instance type
 If you need more powerful instance , you can [change instance type](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/change-instance-type-of-ebs-backed-instance.html). Supported instance types are
@@ -164,8 +175,10 @@ If you are running out of disk space to download models, [increase EBS volume](h
 ### Remote connectivity to underlying services
 Nginx reverse proxy is used to provide [HTTPS encryption](https://docs.openwebui.com/getting-started/advanced-topics/https-encryption/) to Open WebUI which listens on TCP port 8080. 
 
-Ollama and LiteLLM are configured to listen on TCP port 11434 and 4000 on EC2 instance network interface. To allow remote access, configure EC2 instance security group. You can use Nginx reverse proxy (`/etc/nginx/sites-available/https-proxy`) to provide HTTPS/TLS encryption. 
-
+Ollama and LiteLLM are configured to listen on TCP port 11434 and 4000 on EC2 instance network interface.
+To allow remote access, configure EC2 instance security group. You can use Nginx reverse proxy (`/etc/nginx/sites-available/https-proxy`) to provide HTTPS encryption. 
+If ALB is provisioned (`enableALB`), you can create a [HTTP](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/create-listener.html) or
+ (preferably) [HTTPS](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/create-https-listener.html) ALB listener to EC2 instance.
 
 ## Obtaining certificate for HTTPS
 Amazon CloudFront (`enableCloudFront`) [supports](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/using-https-viewers-to-cloudfront.html) HTTPS. You can use [AWS Certificate Manager](https://aws.amazon.com/certificate-manager/) to [request](https://docs.aws.amazon.com/acm/latest/userguide/acm-public-certificates.html) a public certificate for your own domain and [associate](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cnames-and-https-requirements.html) it with your CloudFront distribution.
@@ -201,7 +214,7 @@ Refer to Certbot site for [help](https://certbot.eff.org/pages/help) with this t
 
 ### Updating software
 Ubuntu [unattended upgrades](https://help.ubuntu.com/community/AutomaticSecurityUpdates) is enabled. 
-Open WebUI and LiteLLM are automatically updated with [Watchtower](https://docs.openwebui.com/getting-started/updating/#automatically-updating-open-webui-with-watchtower). 
+Open WebUI and LiteLLM are automatically updated by [Watchtower](https://docs.openwebui.com/getting-started/updating/#automatically-updating-open-webui-with-watchtower). 
 To [update Ollama](https://github.com/ollama/ollama/blob/main/docs/faq.md#how-can-i-upgrade-ollama), run `/home/ubuntu/update-ollama` script. 
 
 ### Restoring from backup
@@ -226,7 +239,7 @@ To futher secure your EC2 instance, you may want to consider the following
   - Use [AWS WAF](https://aws.amazon.com/waf/) to protect your [CloudFront distribution](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/distribution-web-awswaf.html) and/or [Application Load Balancer](https://repost.aws/knowledge-center/waf-protect-ec2-instance)
 - For Amazon CloudFront (`enableCloudFront`)
   - Additional inbound HTTP and HTTPS security groups with [AWS-managed prefix list for Amazon CloudFront](https://aws.amazon.com/blogs/networking-and-content-delivery/limit-access-to-your-origins-using-the-aws-managed-prefix-list-for-amazon-cloudfront/) as source are created. You can remove public internet inbound (`0.0.0.0/0`) HTTP/HTTPS to your ALB and/or EC2 instance
-  - Consider [geo blocking](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/georestrictions.html) to limit public internet access
+  - Consider [geo blocking](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/georestrictions.html) to control public internet access by geographic location
 - Enable [Amazon Inspector](https://aws.amazon.com/inspector/) to [scan EC2 instance](https://docs.aws.amazon.com/inspector/latest/user/scanning-ec2.html) for software vulnerabilities and unintended network exposure.
 - Enable [Amazon GuardDuty](https://aws.amazon.com/guardduty/) security monitoring service with [Runtime Monitoring](https://docs.aws.amazon.com/guardduty/latest/ug/how-runtime-monitoring-works-ec2.html) and [Malware Protection for EC2](https://docs.aws.amazon.com/guardduty/latest/ug/malware-protection.html)
 
