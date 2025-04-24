@@ -15,7 +15,7 @@ Template provides the following features
 - NVIDIA GPU EC2 instance
 - [Generative AI](https://aws.amazon.com/ai/generative-ai/) related applications
   - [Ollama](https://ollama.com/) for running and managing LLMs
-  - [LiteLLM proxy](https://www.litellm.ai/) to provide [Amazon Bedrock](https://aws.amazon.com/bedrock/) model access. EC2 can be deployed in AWS Region that does not support Bedrock
+  - [LiteLLM proxy](https://www.litellm.ai/) to provide [Amazon Bedrock](https://aws.amazon.com/bedrock/) model access.  EC2 instance can be provisioned in AWS Region that does not support Bedrock
   - [Open WebUI](https://openwebui.com/) web interface for interacting with [local Ollama](https://ollama.com/library) and [remote Bedrock](https://docs.aws.amazon.com/bedrock/latest/userguide/models-supported.html) models
 - Remote Administration
   - [Amazon DCV](https://aws.amazon.com/hpc/dcv/) remote display protocol server for graphical desktop access (optional)
@@ -39,9 +39,10 @@ Usage of [Amazon DCV](https://aws.amazon.com/hpc/dcv/) indicates acceptance of [
 By using the template, you accept license agreement of all software that is installed in the EC2 instance. 
 
 ## Requirements
-- EC2 instance must be provisioned in a subnet with IPv4 internet connectivity.
-- Check the [On-Demand Instance quota](https://docs.aws.amazon.com/ec2/latest/instancetypes/ec2-instance-quotas.html#on-demand-instance-quotas) value of your desired instance type and request quota increase where necessary.  
-- To use [Application Load Balancer (ALB)](https://aws.amazon.com/elasticloadbalancing/application-load-balancer/) with HTTPS, either [request a public certificate](https://docs.aws.amazon.com/acm/latest/userguide/acm-public-certificates.html) or [import a certificate](https://docs.aws.amazon.com/acm/latest/userguide/import-certificate.html) into [AWS Certificate Manager](https://aws.amazon.com/certificate-manager/).
+- EC2 instance must be provisioned in a subnet with IPv4 internet connectivity
+- Check the [On-Demand Instance quota](https://docs.aws.amazon.com/ec2/latest/instancetypes/ec2-instance-quotas.html#on-demand-instance-quotas) value of your desired instance type and request quota increase where necessary
+- [Request access](https://docs.aws.amazon.com/bedrock/latest/userguide/model-access-modify.html) to models in desired [Bedrock Region](https://docs.aws.amazon.com/bedrock/latest/userguide/models-regions.html)
+- To use [Application Load Balancer (ALB)](https://aws.amazon.com/elasticloadbalancing/application-load-balancer/) with HTTPS, either [request a public certificate](https://docs.aws.amazon.com/acm/latest/userguide/acm-public-certificates.html) or [import a certificate](https://docs.aws.amazon.com/acm/latest/userguide/import-certificate.html) into [AWS Certificate Manager](https://aws.amazon.com/certificate-manager/)
 
 
 ## Deploying using CloudFormation console
@@ -59,7 +60,6 @@ In most cases, the default values
 Ollama
 - `installWebUI`: install Open WebUI. Default is `Yes`
 - `bedrockRegion`: [AWS Region](https://docs.aws.amazon.com/bedrock/latest/userguide/models-regions.html) to use for Bedrock model access. Default is `us-west-2 (US West - Oregon)`
-  - [Access](https://docs.aws.amazon.com/bedrock/latest/userguide/model-access.html) to Amazon Bedrock foundation models is not granted by default. Do [request access](https://docs.aws.amazon.com/bedrock/latest/userguide/model-access-modify.html) in selected Region before using.
 - `r53ZoneID` : [Amazon Route 53](https://aws.amazon.com/route53/) hosted zone ID to grant [EC2 IAM Role](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/iam-roles-for-amazon-ec2.html) access to. To be used for [Route 53 DNS-01 challenge](https://certbot-dns-route53.readthedocs.io/en/stable/) by [Certbot](https://eff-certbot.readthedocs.io/en/stable/intro.html) (or other [ACME clients](https://letsencrypt.org/docs/client-options/)) to obtain HTTPS certificates for EC2 web server. Permission is restricted to **_acme-challenge.\*** TXT DNS records using [resource record set permissions](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/resource-record-sets-permissions.html). Set empty string for no access. Default is `*` which will grant access to all Route 53 zones in your AWS account.
   - *Route 53 must be [configured](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/dns-configuring.html) as DNS service for your domain.*
 
@@ -162,9 +162,7 @@ To troubleshoot any installation issue, you can view contents of the following l
 Refer to [Starting With Ollama](https://docs.openwebui.com/getting-started/quick-start/starting-with-ollama/) for guidance to manage models. Ollama [site](https://ollama.com/search) provides a listing of available language models and their size (e.g. [DeepSeek](https://ollama.com/library/deepseek-r1/tags)). For best performance, ensure that model size is less than GPU memory size. You can refer to [EC2 Accelerated Computing page](https://aws.amazon.com/ec2/instance-types/#Accelerated_Computing) for GPU memory size specifications.
 
 ### Change EC2 instance type
-If you need more powerful instance , you can [change instance type](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/change-instance-type-of-ebs-backed-instance.html). Supported instance types are
-- Ubuntu (x86_64): G4dn, G5, G6, Gr6, G6e, P4d, P4de, P5, P5e
-- Ubuntu (arm64): G5g
+If you need more powerful instance , you can [change instance type](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/change-instance-type-of-ebs-backed-instance.html).
 
 ### Disk space considerations
 If you are running out of disk space to download models, [increase EBS volume](https://docs.aws.amazon.com/ebs/latest/userguide/requesting-ebs-volume-modifications.html) and [extend file system](https://docs.aws.amazon.com/ebs/latest/userguide/recognize-expanded-volume-linux.html)
