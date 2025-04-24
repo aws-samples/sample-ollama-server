@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: Ollama with optional Open WebUI (uksb-qkr5e6fxra) (tag:GPU)
+Description: Ollama with Open WebUI (uksb-qkr5e6fxra) (tag:GPU)
 Transform: "AWS::LanguageExtensions"
 
 Metadata:
