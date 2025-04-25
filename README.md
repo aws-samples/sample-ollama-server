@@ -5,9 +5,11 @@
 
 This repo provides a [AWS CloudFormation](https://aws.amazon.com/cloudformation/) template to provision [NVIDIA GPU EC2 instance](https://aws.amazon.com/ec2/instance-types/#Accelerated_Computing) with Ollama and Open WebUI, and include access to [Amazon Bedrock](https://aws.amazon.com/bedrock/) foundation models (FMs). Solution can be deployed as a website for LLM interaction (through Open WebUI) or for application development.
 
+<img alt="Ollama with Amazon DCV" src="images/ollama-dcv.png">
+
 
 ## Architecture Diagram
-<img alt="image" src="ollama-server.png">
+<img alt="architecture" src="images/ollama-server.png">
 
 
 ## Overview of Features
