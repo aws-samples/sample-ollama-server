@@ -1645,7 +1645,7 @@ Resources:
                     # LiteLLM config.yaml: build config with available Bedrock models
                     export BEDROCK="${bedrockRegion}"
                     export REGION=`echo $BEDROCK | cut -d" " -f1`
-                    sed -i 's/aws_region_code/'"$REGION"'/g' /opt/docker/docker-compose.yaml
+                    sed -i 's/aws_region_code/'"$REGION"'/g' /opt/docker/compose.yaml
 
                     apt-get install -q -y jq
                     aws bedrock list-inference-profiles --region $REGION | jq -r '.inferenceProfileSummaries[] | select (.status=="ACTIVE") | "- model_name: \"\(.inferenceProfileName)\"\n  litellm_params:\n    model: bedrock/\(.inferenceProfileId)\n"' > /tmp/model.yaml
@@ -1683,13 +1683,13 @@ Resources:
                     rm -f /etc/nginx/sites-enabled/default
                     
                     # HTTPS proxy with Open WebUI: https://docs.openwebui.com/tutorials/https-nginx/
-                    ln -s /etc/nginx/sites-available/https-proxy /etc/nginx/sites-enabled/https-proxy
+                    ln -s /etc/nginx/sites-available/reverse-proxy /etc/nginx/sites-enabled/reverse-proxy
                     systemctl enable nginx
                     systemctl restart nginx
 
                     ;;
                   No)
-                    rm -f /etc/nginx/sites-available/https-proxy
+                    rm -f /etc/nginx/sites-available/reverse-proxy
                     rm -rf /opt/docker/
                     systemctl daemon-reload
                     ;;
@@ -2110,7 +2110,7 @@ Resources:
               ignoreErrors: "true"
         05_app_install:
           files:
-            "/etc/nginx/sites-available/https-proxy":
+            "/etc/nginx/sites-available/reverse-proxy":
               content: |
                 # https://docs.openwebui.com/tutorials/https-nginx/
                 server {                      
@@ -2143,7 +2143,7 @@ Resources:
               mode: "000644"
               owner: "root"
               group: "root"
-            "/opt/docker/docker-compose.yaml": # https://docs.openwebui.com/getting-started/env-configuration
+            "/opt/docker/compose.yaml": # https://docs.openwebui.com/getting-started/env-configuration
               content: !Sub |
                 services:
                   litellm:
@@ -2420,7 +2420,7 @@ Resources:
       Protocol: HTTPS
       ProtocolVersion: HTTP1
       Tags:
-        - Key:
+        - Key: StackName
           Value: !Ref AWS::StackName
         - Key: StackId
           Value: !Ref AWS::StackId

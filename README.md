@@ -80,7 +80,7 @@ EC2 Remote Administration
 - `ingressIPv4`: allowed IPv4 source prefix to remote administration services, e.g. `1.2.3.4/32`. You can get your source IP from [https://checkip.amazonaws.com](https://checkip.amazonaws.com). Default is `0.0.0.0/0`. 
 - `ingressIPv6`: allowed IPv6 source prefix to remote administration services. Use `::1/128` to block all incoming IPv6 access. Default is `::/0`
 - `allowSSHport`: allow inbound SSH. Option does not affect [EC2 Instance Connect](https://aws.amazon.com/blogs/compute/new-using-amazon-ec2-instance-connect-for-ssh-access-to-your-ec2-instances/) access. Default is `Yes`
-- `installDCV`: install graphical desktop environment and [DCV](https://aws.amazon.com/hpc/dcv/) server. Default is `No`
+- `installDCV`: install graphical desktop environment and [Amazon DCV](https://aws.amazon.com/hpc/dcv/) server. Default is `No`
 
 *SSH and DCV inbound access are restricted to `ingressIPv4` and `ingressIPv6` IP prefixes.* 
 
@@ -168,13 +168,13 @@ If you need more powerful instance , you can [change instance type](https://docs
 If you are running out of disk space to download models, [increase EBS volume](https://docs.aws.amazon.com/ebs/latest/userguide/requesting-ebs-volume-modifications.html) and [extend file system](https://docs.aws.amazon.com/ebs/latest/userguide/recognize-expanded-volume-linux.html)
 
 ### Customisation
-[Docker compose](https://docs.docker.com/compose/) is used to run Open WebUI and LiteLLM proxy. You can customise [Open WebUI](https://docs.openwebui.com/getting-started/env-configuration/) and [Lite LLM](https://docs.litellm.ai/docs/proxy/configs) configuration by modifying `/opt/docker/docker-compose.yaml` file. 
+[Docker compose](https://docs.docker.com/compose/) is used to run Open WebUI and LiteLLM proxy. You can customise [Open WebUI](https://docs.openwebui.com/getting-started/env-configuration/) and [Lite LLM](https://docs.litellm.ai/docs/proxy/configs) configuration by modifying `/opt/docker/compose.yaml`. Bedrock models are specified in `/opt/docker/bedrock-models.yaml`.
 
 ### Remote connectivity to underlying services
-Nginx reverse proxy (`/etc/nginx/sites-available/https-proxy`) is used to provide HTTP and [HTTPS encryption](https://docs.openwebui.com/getting-started/advanced-topics/https-encryption/) to Open WebUI which listens on TCP port 8080. 
+Nginx (`/etc/nginx/sites-available/reverse-proxy`) is used to provide HTTP and [HTTPS](https://docs.openwebui.com/getting-started/advanced-topics/https-encryption/) access to Open WebUI which listens on TCP port 8080. 
 
 Ollama and LiteLLM are configured to listen on TCP port 11434 and 4000 on EC2 instance network interface.
-To allow remote access, modify EC2 instance security group [inbound rules](https://docs.aws.amazon.com/quicksight/latest/user/vpc-inbound-rules.html).  You can use Nginx reverse proxy to provide HTTPS encryption. 
+To allow remote access, modify EC2 instance security group [inbound rules](https://docs.aws.amazon.com/quicksight/latest/user/vpc-inbound-rules.html).  You can use Nginx to provide HTTPS encryption. 
 If ALB is provisioned (`enableALB`), you can create a [HTTP](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/create-listener.html) or
  (preferably) [HTTPS](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/create-https-listener.html) ALB listener to EC2 instance.
 
@@ -184,7 +184,7 @@ Amazon CloudFront (`enableCloudFront`) [supports](https://docs.aws.amazon.com/Am
 The EC2 instance uses a self-signed certificate for HTTPS. You can use [Certbot](https://certbot.eff.org/pages/about) to obtain and install [Let's Encrypt](https://letsencrypt.org/) certificate on your web server.
 
 ### Certbot prerequisites
-Ensure you have a domain name whose DNS entry resolves to your EC2 instance IP address. If you do not have a domain, you can [register a new domain](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/domain-register.html#domain-register-procedure-section) using [Amazon Route 53](https://aws.amazon.com/route53/) and [create a DNS A record](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/resource-record-sets-creating.html).
+Ensure you have a domain name whose DNS entry resolves to your EC2 instance IP address. If you do not have a domain, you can [register a new domain](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/domain-register.html#domain-register-procedure-section) using [Amazon Route 53](https://aws.amazon.com/route53/) and [create a DNS A and/or AAAA record](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/resource-record-sets-creating.html).
 
   
 ### Option 1: Nginx plugin
@@ -196,7 +196,7 @@ Ensure you have a domain name whose DNS entry resolves to your EC2 instance IP a
 
   *Nginx plugin uses [HTTP-01 challenge](https://letsencrypt.org/docs/challenge-types/#http-01-challenge), and requires HTTP port 80 to be accessible from public internet*
 
-### Option 2: certbot-dns-route53 plugin 
+### Option 2: Route 53 plugin 
 - The [certbot-dns-route53](https://certbot-dns-route53.readthedocs.io/en/stable/) option requires your DNS to be hosted by Route 53. It supports wildcard certificates and domain names that resolve to private IP addresses.  Ensure that Route 53 zone access is granted by specifying `r53ZoneID` value. From terminal, run the below command and follow instructions.
 
   ```
