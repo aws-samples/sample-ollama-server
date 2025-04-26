@@ -132,7 +132,7 @@ The following are available on **Outputs** section
 
 
 If `installWebUI` is `Yes`
-- `WebUrl`: Open WebUI URL
+- `WebUrl`: Open WebUI URL. Go to URL and create an adminstrative account
 
 If `installDCV` is `Yes`
 - `DCVwebConsole` : DCV web browser client URL. Native DCV clients can be downloaded from [https://www.amazondcv.com/](https://www.amazondcv.com/). Use SSM session manager or EC2 instance connect to set `ubuntu` user password, and login as ubuntu.
