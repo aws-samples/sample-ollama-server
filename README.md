@@ -14,7 +14,9 @@ This repo provides a [AWS CloudFormation](https://aws.amazon.com/cloudformation/
 
 ## Overview of Features
 Template provides the following features
-- NVIDIA GPU EC2 instance
+- NVIDIA GPU EC2 instance. Supported instance types include
+  - x86_64: [G4dn](https://aws.amazon.com/ec2/instance-types/g4/#Product_Details), [G5](https://aws.amazon.com/ec2/instance-types/g5/), [G6](https://aws.amazon.com/ec2/instance-types/g6/#Product_details), [Gr6](https://aws.amazon.com/ec2/instance-types/g6/#Product_details), [G6e](https://aws.amazon.com/ec2/instance-types/g6e/), [P4d](https://aws.amazon.com/ec2/instance-types/p4/#Product_details), [P4de](https://aws.amazon.com/ec2/instance-types/p4/#Product_details), [P5](https://aws.amazon.com/ec2/instance-types/p5/#Product_details), [P5e](https://aws.amazon.com/ec2/instance-types/p5/#Product_details), [P5en](https://aws.amazon.com/ec2/instance-types/p5/#Product_details)
+  - arm64: [G5g](https://aws.amazon.com/ec2/instance-types/g5g/)
 - [Generative AI](https://aws.amazon.com/ai/generative-ai/) related applications
   - [Ollama](https://ollama.com/) for running and managing LLMs
   - [LiteLLM proxy](https://www.litellm.ai/) to provide [Amazon Bedrock](https://aws.amazon.com/bedrock/) model access.  EC2 instance can be provisioned in AWS Region that does not support Bedrock
@@ -173,10 +175,10 @@ If you are running out of disk space to download models, [increase EBS volume](h
 [Docker compose](https://docs.docker.com/compose/) is used to run Open WebUI and LiteLLM proxy. You can customise [Open WebUI](https://docs.openwebui.com/getting-started/env-configuration/) and [Lite LLM](https://docs.litellm.ai/docs/proxy/configs) configuration by modifying `/opt/docker/docker-compose.yaml` file. 
 
 ### Remote connectivity to underlying services
-Nginx reverse proxy is used to provide [HTTPS encryption](https://docs.openwebui.com/getting-started/advanced-topics/https-encryption/) to Open WebUI which listens on TCP port 8080. 
+Nginx reverse proxy (`/etc/nginx/sites-available/https-proxy`) is used to provide HTTP and [HTTPS encryption](https://docs.openwebui.com/getting-started/advanced-topics/https-encryption/) to Open WebUI which listens on TCP port 8080. 
 
 Ollama and LiteLLM are configured to listen on TCP port 11434 and 4000 on EC2 instance network interface.
-To allow remote access, configure EC2 instance security group. You can use Nginx reverse proxy (`/etc/nginx/sites-available/https-proxy`) to provide HTTPS encryption. 
+To allow remote access, modify EC2 instance security group [inbound rules](https://docs.aws.amazon.com/quicksight/latest/user/vpc-inbound-rules.html).  You can use Nginx reverse proxy to provide HTTPS encryption. 
 If ALB is provisioned (`enableALB`), you can create a [HTTP](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/create-listener.html) or
  (preferably) [HTTPS](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/create-https-listener.html) ALB listener to EC2 instance.
 
@@ -199,7 +201,7 @@ Ensure you have a domain name whose DNS entry resolves to your EC2 instance IP a
   *Nginx plugin uses [HTTP-01 challenge](https://letsencrypt.org/docs/challenge-types/#http-01-challenge), and requires HTTP port 80 to be accessible from public internet*
 
 ### Option 2: certbot-dns-route53 plugin 
-- The [certbot-dns-route53](https://certbot-dns-route53.readthedocs.io/en/stable/) option requires your DNS to be hosted by Route 53. It supports wildcard certificates and domain names that resolve to private IP addresses.  Ensure that Route 53 zone access is granted by specifying `r53ZoneID` value. From terminal, run the below command based on installed web server type and follow instructions.
+- The [certbot-dns-route53](https://certbot-dns-route53.readthedocs.io/en/stable/) option requires your DNS to be hosted by Route 53. It supports wildcard certificates and domain names that resolve to private IP addresses.  Ensure that Route 53 zone access is granted by specifying `r53ZoneID` value. From terminal, run the below command and follow instructions.
 
   ```
   sudo certbot --dns-route53 --installer nginx
