@@ -130,13 +130,13 @@ The following are available on **Outputs** section
 - `EC2serialConsole`: [EC2 Serial Console](https://aws.amazon.com/blogs/aws/troubleshoot-boot-and-networking-issues-with-new-ec2-serial-console/) URL. Functionality is available under [certain conditions](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-serial-console-prerequisites.html).
 - `SSMsessionManager` or `SSMsessionManagerDCV`: [SSM Session Manager](https://aws.amazon.com/blogs/aws/new-session-manager/) URL 
 
-
-If `installWebUI` is `Yes`
-- `WebUrl`: Open WebUI URL. Go to URL and create an adminstrative account
-
 If `installDCV` is `Yes`
 - `DCVwebConsole` : DCV web browser client URL. Native DCV clients can be downloaded from [https://www.amazondcv.com/](https://www.amazondcv.com/). Use SSM session manager or EC2 instance connect to set `ubuntu` user password, and login as ubuntu.
 
+
+#### Open WebUI
+If `installWebUI` is `Yes`
+- `WebUrl`: Open WebUI URL
 
 If `enableALB` is `Yes`
 - `AlbConsole`: ALB console URL
@@ -145,6 +145,9 @@ If `enableALB` is `Yes`
 If `enableCloudFront` is `Yes`
 - `CloudFrontConsole` : CloudFront console URL link
 - `CloudFrontURL` : CloudFront distribution URL, e.g. `https://d111111abcdef8.cloudfront.net`
+
+*Go to EC2, ALB, or CloudFront URL and create an administrative account immediately*
+
 
 
 ### Troubleshooting
@@ -204,7 +207,7 @@ Ensure you have a domain name whose DNS entry resolves to your EC2 instance IP a
   ```
   
 
-Refer to Certbot site for [help](https://certbot.eff.org/pages/help) with this tool.  
+Refer to Certbot site for [help](https://certbot.eff.org/pages/help) with the tool.  
 
 
 
