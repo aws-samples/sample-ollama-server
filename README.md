@@ -57,10 +57,6 @@ Login to AWS [CloudFormation console](https://console.aws.amazon.com/cloudformat
 ### CloudFormation Parameters
 In most cases, the default values are sufficient. Do verify instance type [availability](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-discovery.html). You will need to specify values for `vpcID`, `subnetID`, `ec2KeyPair` and `albSubnets`. For security reasons, configure `ingressIPv4` and `ingressIPv6` to your IP address.
 
-
-In most cases, the default values 
-
-
 Ollama
 - `installWebUI`: install Open WebUI. Default is `Yes`
 - `bedrockRegion`: [AWS Region](https://docs.aws.amazon.com/bedrock/latest/userguide/models-regions.html) to use for Bedrock model access. Default is `us-west-2 (US West - Oregon)`
