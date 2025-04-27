@@ -1635,29 +1635,29 @@ Resources:
                 systemctl daemon-reload
                 systemctl start ollama
 
+                # LiteLLM config.yaml: build config with available Bedrock models
+                export BEDROCK="${bedrockRegion}"
+                export REGION=`echo $BEDROCK | cut -d" " -f1`
+                sed -i 's/aws_region_code/'"$REGION"'/g' /opt/docker/compose.yaml
+
+                apt-get install -q -y jq
+
+                aws bedrock list-inference-profiles --region $REGION | jq -r '.inferenceProfileSummaries[] | select (.status=="ACTIVE") | "- model_name: \"\(.inferenceProfileName)\"\n  litellm_params:\n    model: bedrock/\(.inferenceProfileId)\n"' > /tmp/bedrock-models.yaml
+                aws bedrock list-foundation-models --region $REGION | jq -r '.modelSummaries[] | select (.modelLifecycle.status == "ACTIVE" and (.responseStreamingSupported == true) and (.inferenceTypesSupported | contains(["ON_DEMAND"])) and (.outputModalities | contains(["TEXT"])) ) | "- model_name: \"\(.modelName)\"\n  litellm_params:\n    model: bedrock/\(.modelId)\n"' >> /tmp/model.yaml
+                sed -i '/model\:/a\   \ aws_region_name: '"$REGION"'' /tmp/bedrock-models.yaml
+                sed -i 's/^/  /' /tmp/bedrock-models.yaml
+                sed -i '1s/^/model_list:\n/' /tmp/bedrock-models.yaml
+                cp -f /tmp/bedrock-models.yaml /opt/docker/bedrock-models.yaml
+
+                chown ubuntu:ubuntu -R /opt/docker
+                chmod og-rwx /opt/docker/bedrock-models.yaml
+
                 # Web UI
                 export WebUI="${installWebUI}"
                 case $WebUI in
                   Yes)
                     # https://github.com/open-webui/open-webui/discussions/4376#discussioncomment-10245922
                     # https://github.com/open-webui/open-webui/discussions/9987#discussioncomment-12313446                 
-
-                    apt-get install -q -y jq
-
-                    # LiteLLM config.yaml: build config with available Bedrock models
-                    export BEDROCK="${bedrockRegion}"
-                    export REGION=`echo $BEDROCK | cut -d" " -f1`
-                    sed -i 's/aws_region_code/'"$REGION"'/g' /opt/docker/compose.yaml
-
-                    aws bedrock list-inference-profiles --region $REGION | jq -r '.inferenceProfileSummaries[] | select (.status=="ACTIVE") | "- model_name: \"\(.inferenceProfileName)\"\n  litellm_params:\n    model: bedrock/\(.inferenceProfileId)\n"' > /tmp/bedrock-models.yaml
-                    aws bedrock list-foundation-models --region $REGION | jq -r '.modelSummaries[] | select (.modelLifecycle.status == "ACTIVE" and (.responseStreamingSupported == true) and (.inferenceTypesSupported | contains(["ON_DEMAND"])) and (.outputModalities | contains(["TEXT"])) ) | "- model_name: \"\(.modelName)\"\n  litellm_params:\n    model: bedrock/\(.modelId)\n"' >> /tmp/model.yaml
-                    sed -i '/model\:/a\   \ aws_region_name: '"$REGION"'' /tmp/bedrock-models.yaml
-                    sed -i 's/^/  /' /tmp/bedrock-models.yaml
-                    sed -i '1s/^/model_list:\n/' /tmp/bedrock-models.yaml
-                    cp -f /tmp/bedrock-models.yaml /opt/docker/bedrock-models.yaml
-
-                    chown ubuntu:ubuntu -R /opt/docker/*
-                    chmod og-rwx /opt/docker/bedrock-models.yaml                    
 
                     # https://docs.openwebui.com/tutorials/integrations/redis/
                     if (lsb_release -r -s | grep -q 22); then
@@ -1668,7 +1668,7 @@ Resources:
                       systemctl enable --now valkey-server
                     fi
 
-                    # Pull Open WebUI image
+                    # Pull Open WebUI and LiteLLM image
                     cd /opt/docker
                     docker compose up -d --quiet-pull
                     # ~ 1 min to change from starting to started
@@ -1692,9 +1692,17 @@ Resources:
 
                     ;;
                   No)
-                    rm -f /etc/nginx/sites-available/reverse-proxy
-                    rm -rf /opt/docker/
-                    systemctl daemon-reload
+                    # No Nginx  
+                    rm -rf /etc/nginx
+
+                    # Delete Open WebUI entries
+                    sed -i "30,55d;65d;69,70d" /opt/docker/compose.yaml
+                    sed -i 's/open-webui//g' /opt/docker/compose.yaml
+
+                    # Pull LiteLLM image only
+                    cd /opt/docker
+                    docker compose up -d --quiet-pull
+
                     ;;
                 esac
 
@@ -1895,16 +1903,6 @@ Resources:
                 if (arch | grep -q x86); then
                   apt-get install -q -y ./nice-dcv-gltest_*.deb
                 fi
-
-                # /etc/profile.d: https://wiki.gnome.org/Apps/Terminal/FAQ
-                systemctl isolate graphical.target && sleep 3
-                GNOMEUID=$(sudo -u ubuntu gsettings get org.gnome.Terminal.ProfilesList list | cut -d"'" -f2)
-                DEFAULTUID=$(gsettings get org.gnome.Terminal.ProfilesList default | tr -d \')
-                sudo -u ubuntu gsettings get "org.gnome.Terminal.Legacy.Profile:/org/gnome/terminal/legacy/profiles:/:$GNOMEUID/" login-shell
-                sudo -u ubuntu dbus-run-session gsettings set "org.gnome.Terminal.Legacy.Profile:/org/gnome/terminal/legacy/profiles:/:$GNOMEUID/" login-shell true
-                sudo -u ubuntu dbus-run-session gsettings set "org.gnome.Terminal.Legacy.Profile:/org/gnome/terminal/legacy/profiles:/:$DEFAULTUID/" login-shell true
-                sudo -u ubuntu gsettings get "org.gnome.Terminal.Legacy.Profile:/org/gnome/terminal/legacy/profiles:/:$GNOMEUID/" login-shell
-                systemctl isolate multi-user.target
 
                 # Printer redirection: https://docs.aws.amazon.com/dcv/latest/adminguide/manage-printer.html
                 apt-get install -q -y cups
