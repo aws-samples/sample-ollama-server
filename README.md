@@ -3,7 +3,7 @@
 [Ollama](https://ollama.com/) allows users to run open-source [large language models (LLMs)](https://aws.amazon.com/what-is/large-language-model/), offering a streamlined command line experience for interacting with and experimenting with these models. [Open WebUI](https://openwebui.com/) is an extensible, feature-rich, and user-friendly web interface to Ollama.  For best performance, a [GPU](https://github.com/ollama/ollama/blob/main/docs/gpu.md) is required.
 
 
-This repo provides a [AWS CloudFormation](https://aws.amazon.com/cloudformation/) template to provision [NVIDIA GPU EC2 instances](https://aws.amazon.com/ec2/instance-types/#Accelerated_Computing) with Ollama and Open WebUI, and include access to [Amazon Bedrock](https://aws.amazon.com/bedrock/) foundation models (FMs). Solution can be deployed as a website for LLM interaction (through Open WebUI) or for application development.
+This repo provides a [AWS CloudFormation](https://aws.amazon.com/cloudformation/) template to provision [NVIDIA GPU EC2 instances](https://aws.amazon.com/ec2/instance-types/#Accelerated_Computing) with Ollama and Open WebUI, and include access to [Amazon Bedrock](https://aws.amazon.com/bedrock/) foundation models (FMs). Solution can be deployed as a website for LLM interaction through Open WebUI, or as application development environment with [Amazon DCV](https://aws.amazon.com/hpc/dcv/) server.
 
 <img alt="Ollama with Amazon DCV" src="images/ollama-dcv.png">
 
@@ -57,15 +57,15 @@ By using the template, you accept license agreement of all software that is inst
 ## Deploying using CloudFormation console
 Download [Ollama-Server.yaml](Ollama-Server.yaml) file. 
 
-Login to AWS [CloudFormation console](https://console.aws.amazon.com/cloudformation/home#/stacks/create/template). Choose **Create Stack**, **Upload a template file**, **Choose File**, select your .YAML file and choose **Next**. Enter a **Stack name** and specify parameters values.
+Login to AWS [CloudFormation console](https://console.aws.amazon.com/cloudformation/home#/stacks/create/template). Choose **[Create Stack](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cfn-console-create-stack.html#create-stack)**, **Upload a template file**, **Choose File**, select your .YAML file and choose **Next**. Enter a **Stack name** and specify parameters values.
 
 ### CloudFormation Parameters
 In most cases, the default values are sufficient. Do verify instance type [availability](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-discovery.html). You will need to specify values for `vpcID`, `subnetID`, `ec2KeyPair` and `albSubnets`. For security reasons, configure `ingressIPv4` and `ingressIPv6` to your IP address.
 
 Ollama
 - `installWebUI`: install Open WebUI. Default is `Yes`
-- `bedrockRegion`: [AWS Region](https://docs.aws.amazon.com/bedrock/latest/userguide/models-regions.html) to use for Bedrock model access. Default is `us-west-2 (US West - Oregon)`
-- `r53ZoneID` : [Amazon Route 53](https://aws.amazon.com/route53/) hosted zone ID to grant [EC2 IAM Role](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/iam-roles-for-amazon-ec2.html) access to. To be used for [Route 53 DNS-01 challenge](https://certbot-dns-route53.readthedocs.io/en/stable/) by [Certbot](https://eff-certbot.readthedocs.io/en/stable/intro.html) (or other [ACME clients](https://letsencrypt.org/docs/client-options/)) to obtain HTTPS certificates for EC2 web server. Permission is restricted to **_acme-challenge.\*** TXT DNS records using [resource record set permissions](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/resource-record-sets-permissions.html). Set empty string for no access. Default is `*` which will grant access to all Route 53 zones in your AWS account.
+- `bedrockRegion`: [AWS Region](https://docs.aws.amazon.com/bedrock/latest/userguide/models-regions.html) to use for Bedrock model access. Usage charges are listed on [Amazon Bedrock pricing](https://aws.amazon.com/bedrock/pricing/) page. Default is `us-west-2 (US West - Oregon)`
+- `r53ZoneID` : [Amazon Route 53](https://aws.amazon.com/route53/) hosted zone ID to grant [EC2 IAM Role](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/iam-roles-for-amazon-ec2.html) access to. To be used for [Route 53 DNS-01 challenge](https://certbot-dns-route53.readthedocs.io/en/stable/) by [Certbot](https://eff-certbot.readthedocs.io/en/stable/intro.html) to obtain HTTPS certificate for Nginx web server. Permission is restricted to **_acme-challenge.\*** TXT DNS records using [resource record set permissions](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/resource-record-sets-permissions.html). Set empty string for no access. Default is `*` which will grant access to all Route 53 zones in your AWS account.
   - *Route 53 must be [configured](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/dns-configuring.html) as DNS service for your domain.*
 
 EC2 Instance
@@ -95,12 +95,12 @@ EBS volume
 
 Application Load Balancer (ALB)
 - `enableALB`: deploy [Application Load Balancer](https://aws.amazon.com/elasticloadbalancing/application-load-balancer/) with EC2 instance as target. Associated charges are listed on [Elastic Load Balancing pricing](https://aws.amazon.com/elasticloadbalancing/pricing/) page. Default is `No`
-- `albSubnets`: subnets for ALB. Select at least 2 AZ subnets in EC2 VPC
-  - *Select a subnet if `enableALB` is `No`*
+- `albSubnets`#: subnets for ALB. Select at least 2 AZ subnets in EC2 VPC
 - `albScheme`: either `internet-facing` or `internal`. An internet-facing load balancer routes requests from clients to targets over the internet. An internal load balancer routes requests to targets using private IP addresses. Default is `internet-facing`
 - `albIpAddressType`: [IP address type](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/application-load-balancers.html#ip-address-type), either `IPv4`, `IPv4-and-IPv6` or `IPv6`. Default is `IPv4`
-
 - `albLogging`: enable [access logging](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-access-logs.html) to S3 bucket. Default is `No`
+
+*Select a subnet even if `enableALB` is `No`*
   
 
 ALB HTTPS listener
@@ -176,7 +176,7 @@ If you need more powerful instance , you can [change instance type](https://docs
 If you are running out of disk space to download models, [increase EBS volume](https://docs.aws.amazon.com/ebs/latest/userguide/requesting-ebs-volume-modifications.html) and [extend file system](https://docs.aws.amazon.com/ebs/latest/userguide/recognize-expanded-volume-linux.html)
 
 ### Customisation
-[Docker compose](https://docs.docker.com/compose/) is used to run Open WebUI and LiteLLM proxy. You can customise [Open WebUI](https://docs.openwebui.com/getting-started/env-configuration/) and [LiteLLM Proxy Server](https://docs.litellm.ai/docs/proxy/configs) configuration by modifying `/opt/docker/compose.yaml`. Amazon Bedrock text and image models are specified in `/opt/docker/bedrock-models.yaml` and `/opt/docker/bedrock-image-models.yaml` respectively.
+[Docker compose](https://docs.docker.com/compose/) is used to run Open WebUI and LiteLLM. You can customise [Open WebUI](https://docs.openwebui.com/getting-started/env-configuration/) and [LiteLLM Proxy Server](https://docs.litellm.ai/docs/proxy/configs) configuration by modifying `/opt/docker/compose.yaml`. Amazon Bedrock text and image models are specified in `/opt/docker/bedrock-models.yaml` and `/opt/docker/bedrock-image-models.yaml` respectively.
 
 ### Remote connectivity to underlying services
 Nginx (`/etc/nginx/sites-available/reverse-proxy`) is used to provide HTTP and [HTTPS](https://docs.openwebui.com/getting-started/advanced-topics/https-encryption/) access to Open WebUI which listens on TCP port 8080.
@@ -184,7 +184,7 @@ Nginx (`/etc/nginx/sites-available/reverse-proxy`) is used to provide HTTP and [
 Ollama, LiteLLM(text) and LiteLLM(image) are configured to listen on EC2 instance's network interface on TCP port 11434, 4000 and 4100 respectively.
 To allow remote connections, modify EC2 instance security group [inbound rules](https://docs.aws.amazon.com/quicksight/latest/user/vpc-inbound-rules.html) to allow access from your IP address.  You can use Nginx to provide HTTPS encryption. 
 If ALB is provisioned (`enableALB`), you can create a [HTTP](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/create-listener.html) or
- (preferably) [HTTPS](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/create-https-listener.html) ALB listener to EC2 instance.
+ (preferably) [HTTPS](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/create-https-listener.html) ALB listener to your EC2 instance.
 
 ## Obtaining certificate for HTTPS
 Amazon CloudFront (`enableCloudFront`) [supports](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/using-https-viewers-to-cloudfront.html) HTTPS. You can use [AWS Certificate Manager](https://aws.amazon.com/certificate-manager/) to [request](https://docs.aws.amazon.com/acm/latest/userguide/acm-public-certificates.html) a public certificate for your own domain and [associate](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cnames-and-https-requirements.html) it with your CloudFront distribution.
