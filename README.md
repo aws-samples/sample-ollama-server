@@ -3,7 +3,7 @@
 [Ollama](https://ollama.com/) allows users to run open-source [large language models (LLMs)](https://aws.amazon.com/what-is/large-language-model/), offering a streamlined command line experience for interacting with and experimenting with these models. [Open WebUI](https://openwebui.com/) is an extensible, feature-rich, and user-friendly web interface to Ollama.  For best performance, a [GPU](https://github.com/ollama/ollama/blob/main/docs/gpu.md) is required.
 
 
-This repo provides a [AWS CloudFormation](https://aws.amazon.com/cloudformation/) template to provision [NVIDIA GPU EC2 instance](https://aws.amazon.com/ec2/instance-types/#Accelerated_Computing) with Ollama and Open WebUI, and include access to [Amazon Bedrock](https://aws.amazon.com/bedrock/) foundation models (FMs). Solution can be deployed as a website for LLM interaction (through Open WebUI) or for application development.
+This repo provides a [AWS CloudFormation](https://aws.amazon.com/cloudformation/) template to provision [NVIDIA GPU EC2 instances](https://aws.amazon.com/ec2/instance-types/#Accelerated_Computing) with Ollama and Open WebUI, and include access to [Amazon Bedrock](https://aws.amazon.com/bedrock/) foundation models (FMs). Solution can be deployed as a website for LLM interaction (through Open WebUI) or for application development.
 
 <img alt="Ollama with Amazon DCV" src="images/ollama-dcv.png">
 
@@ -17,10 +17,11 @@ Template provides the following features
 - NVIDIA GPU EC2 instance. Supported instance types include
   - x86_64: [G4dn](https://aws.amazon.com/ec2/instance-types/g4/#Product_Details), [G5](https://aws.amazon.com/ec2/instance-types/g5/), [G6](https://aws.amazon.com/ec2/instance-types/g6/#Product_details), [Gr6](https://aws.amazon.com/ec2/instance-types/g6/#Product_details), [G6e](https://aws.amazon.com/ec2/instance-types/g6e/), [P4d](https://aws.amazon.com/ec2/instance-types/p4/#Product_details), [P4de](https://aws.amazon.com/ec2/instance-types/p4/#Product_details), [P5](https://aws.amazon.com/ec2/instance-types/p5/#Product_details), [P5e](https://aws.amazon.com/ec2/instance-types/p5/#Product_details), [P5en](https://aws.amazon.com/ec2/instance-types/p5/#Product_details)
   - arm64: [G5g](https://aws.amazon.com/ec2/instance-types/g5g/)
-- [Generative AI](https://aws.amazon.com/ai/generative-ai/) related applications
+- [Generative AI](https://aws.amazon.com/ai/generative-ai/) applications
   - [Ollama](https://ollama.com/) for running and managing LLMs
-  - [LiteLLM proxy](https://www.litellm.ai/) to provide [Amazon Bedrock](https://aws.amazon.com/bedrock/) model access.  EC2 instance can be provisioned in AWS Region that does not support Bedrock
   - [Open WebUI](https://openwebui.com/) web interface for interacting with [local Ollama](https://ollama.com/library) and [remote Bedrock](https://docs.aws.amazon.com/bedrock/latest/userguide/models-supported.html) models
+    - [Amazon Bedrock](https://aws.amazon.com/bedrock/) model access through [LiteLLM proxy server](https://www.litellm.ai/)
+    - [Image generation](https://docs.openwebui.com/tutorials/images/#using-image-generation) using [Stability AI's](https://stability.ai/) [Stable Diffusion 3.5 Large](https://aws.amazon.com/blogs/aws/stable-diffusion-3-5-large-is-now-available-in-amazon-bedrock/) model in Bedrock (experimental)
 - Remote Administration
   - [Amazon DCV](https://aws.amazon.com/hpc/dcv/) remote display protocol server for graphical desktop access (optional)
   - [SSM Session Manager](https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager.html)  secure shell access 
@@ -30,6 +31,9 @@ Template provides the following features
   - [AWS Backup](https://aws.amazon.com/backup/) to protect EC2 instance data (optional)
   - [Application Load Balancer](https://aws.amazon.com/elasticloadbalancing/application-load-balancer/) with SSL/TLS certificate from [AWS Certificate Manager](https://aws.amazon.com/certificate-manager/) (optional)
   - [Amazon CloudFront](https://aws.amazon.com/cloudfront/) CDN with support for [VPC Origin](https://aws.amazon.com/blogs/networking-and-content-delivery/introducing-cloudfront-virtual-private-cloud-vpc-origins-shield-your-web-applications-from-public-internet/) (optional)
+
+
+*EC2 instance can be provisioned in AWS Region that does not support Bedrock*
 
 ## Notice
 Although this repository is released under the [MIT-0](LICENSE) license, its CloudFormation template uses third party components which are released under the following respective licenses
@@ -45,7 +49,8 @@ By using the template, you accept license agreement of all software that is inst
 ## Requirements
 - EC2 instance must be provisioned in a subnet with IPv4 internet connectivity
 - Check the [On-Demand Instance quota](https://docs.aws.amazon.com/ec2/latest/instancetypes/ec2-instance-quotas.html#on-demand-instance-quotas) value of your desired instance type and request quota increase where necessary
-- [Request access](https://docs.aws.amazon.com/bedrock/latest/userguide/model-access-modify.html) to models in desired [Bedrock Region](https://docs.aws.amazon.com/bedrock/latest/userguide/models-regions.html)
+- [Request access](https://docs.aws.amazon.com/bedrock/latest/userguide/model-access-modify.html) to foundational models in desired [Bedrock Region](https://docs.aws.amazon.com/bedrock/latest/userguide/models-regions.html)
+- To use Open WebUI [image generation](https://docs.openwebui.com/tutorials/images/#using-image-generation) feature, request access to `Stable Diffusion 3.5 Large` model in [us-west-2 Region](https://us-west-2.console.aws.amazon.com/bedrock/home?region=us-west-2#/modelaccess)
 - To use [Application Load Balancer (ALB)](https://aws.amazon.com/elasticloadbalancing/application-load-balancer/) with HTTPS, either [request a public certificate](https://docs.aws.amazon.com/acm/latest/userguide/acm-public-certificates.html) or [import a certificate](https://docs.aws.amazon.com/acm/latest/userguide/import-certificate.html) into [AWS Certificate Manager](https://aws.amazon.com/certificate-manager/)
 
 
@@ -135,7 +140,7 @@ If `installDCV` is `Yes`
 
 
 #### Open WebUI
-If `installWebUI` is `Yes`
+If `installWebUI` is `Yes`**
 - `WebUrl`: Open WebUI URL
 
 If `enableALB` is `Yes`
@@ -146,7 +151,7 @@ If `enableCloudFront` is `Yes`
 - `CloudFrontConsole` : CloudFront console URL link
 - `CloudFrontURL` : CloudFront distribution URL, e.g. `https://d111111abcdef8.cloudfront.net`
 
-*Go to EC2, ALB, or CloudFront URL and create an administrative account immediately*
+\** *Go to EC2, ALB, or CloudFront URL and create an administrative account immediately*
 
 
 
@@ -162,7 +167,7 @@ To troubleshoot any installation issue, you can view contents of the following l
 ## Using Ollama and Open WebUI
 
 ### Managing models
-Refer to [Starting With Ollama](https://docs.openwebui.com/getting-started/quick-start/starting-with-ollama/) for guidance to manage models. Ollama [site](https://ollama.com/search) provides a listing of available language models and their size (e.g. [DeepSeek](https://ollama.com/library/deepseek-r1/tags)). For best performance, ensure that model size is less than GPU memory size. You can refer to [EC2 Accelerated Computing page](https://aws.amazon.com/ec2/instance-types/#Accelerated_Computing) for GPU memory size specifications.
+Refer to [Starting With Ollama](https://docs.openwebui.com/getting-started/quick-start/starting-with-ollama/) for guidance on managing models. Ollama [site](https://ollama.com/search) provides a listing of available language models and their size (e.g. [DeepSeek](https://ollama.com/library/deepseek-r1/tags)). For best performance, ensure that model size is less than GPU memory size. You can refer to [EC2 Accelerated Computing page](https://aws.amazon.com/ec2/instance-types/#Accelerated_Computing) for GPU memory size specifications.
 
 ### Change EC2 instance type
 If you need more powerful instance , you can [change instance type](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/change-instance-type-of-ebs-backed-instance.html).
@@ -171,13 +176,13 @@ If you need more powerful instance , you can [change instance type](https://docs
 If you are running out of disk space to download models, [increase EBS volume](https://docs.aws.amazon.com/ebs/latest/userguide/requesting-ebs-volume-modifications.html) and [extend file system](https://docs.aws.amazon.com/ebs/latest/userguide/recognize-expanded-volume-linux.html)
 
 ### Customisation
-[Docker compose](https://docs.docker.com/compose/) is used to run Open WebUI and LiteLLM proxy. You can customise [Open WebUI](https://docs.openwebui.com/getting-started/env-configuration/) and [Lite LLM](https://docs.litellm.ai/docs/proxy/configs) configuration by modifying `/opt/docker/compose.yaml`. Bedrock models are specified in `/opt/docker/bedrock-models.yaml`.
+[Docker compose](https://docs.docker.com/compose/) is used to run Open WebUI and LiteLLM proxy. You can customise [Open WebUI](https://docs.openwebui.com/getting-started/env-configuration/) and [LiteLLM Proxy Server](https://docs.litellm.ai/docs/proxy/configs) configuration by modifying `/opt/docker/compose.yaml`. Amazon Bedrock text and image models are specified in `/opt/docker/bedrock-models.yaml` and `/opt/docker/bedrock-image-models.yaml` respectively.
 
 ### Remote connectivity to underlying services
-Nginx (`/etc/nginx/sites-available/reverse-proxy`) is used to provide HTTP and [HTTPS](https://docs.openwebui.com/getting-started/advanced-topics/https-encryption/) access to Open WebUI which listens on TCP port 8080. 
+Nginx (`/etc/nginx/sites-available/reverse-proxy`) is used to provide HTTP and [HTTPS](https://docs.openwebui.com/getting-started/advanced-topics/https-encryption/) access to Open WebUI which listens on TCP port 8080.
 
-Ollama and LiteLLM are configured to listen on TCP port 11434 and 4000 on EC2 instance network interface.
-To allow remote access, modify EC2 instance security group [inbound rules](https://docs.aws.amazon.com/quicksight/latest/user/vpc-inbound-rules.html).  You can use Nginx to provide HTTPS encryption. 
+Ollama, LiteLLM(text) and LiteLLM(image) are configured to listen on EC2 instance's network interface on TCP port 11434, 4000 and 4100 respectively.
+To allow remote connections, modify EC2 instance security group [inbound rules](https://docs.aws.amazon.com/quicksight/latest/user/vpc-inbound-rules.html) to allow access from your IP address.  You can use Nginx to provide HTTPS encryption. 
 If ALB is provisioned (`enableALB`), you can create a [HTTP](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/create-listener.html) or
  (preferably) [HTTPS](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/create-https-listener.html) ALB listener to EC2 instance.
 
@@ -186,7 +191,7 @@ Amazon CloudFront (`enableCloudFront`) [supports](https://docs.aws.amazon.com/Am
 
 The EC2 instance uses a self-signed certificate for HTTPS. You can use [Certbot](https://certbot.eff.org/pages/about) to obtain and install [Let's Encrypt](https://letsencrypt.org/) certificate on your web server.
 
-### Certbot prerequisites
+### Using Certbot
 Ensure you have a domain name whose DNS entry resolves to your EC2 instance IP address. If you do not have a domain, you can [register a new domain](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/domain-register.html#domain-register-procedure-section) using [Amazon Route 53](https://aws.amazon.com/route53/) and [create a DNS A and/or AAAA record](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/resource-record-sets-creating.html).
 
   
@@ -244,15 +249,11 @@ To futher secure your EC2 instance, you may want to consider the following
 - Enable [Amazon Inspector](https://aws.amazon.com/inspector/) to [scan EC2 instance](https://docs.aws.amazon.com/inspector/latest/user/scanning-ec2.html) for software vulnerabilities and unintended network exposure.
 - Enable [Amazon GuardDuty](https://aws.amazon.com/guardduty/) security monitoring service with [Runtime Monitoring](https://docs.aws.amazon.com/guardduty/latest/ug/how-runtime-monitoring-works-ec2.html) and [Malware Protection for EC2](https://docs.aws.amazon.com/guardduty/latest/ug/malware-protection.html)
 
-
-
-
 ## Clean Up
 To remove created resources, you will need to
 - [Delete](https://docs.aws.amazon.com/aws-backup/latest/devguide/deleting-backups.html) any recovery points in created backup vault
 - [Disable](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/Using_ChangingDisableAPITermination.html) EC2 instance termination protection (if enabled)
 - [Delete](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cfn-console-delete-stack.html) CloudFormation stack
-
 
 ## Security
 
@@ -261,4 +262,3 @@ See [CONTRIBUTING](CONTRIBUTING.md#security-issue-notifications) for more inform
 ## License
 
 This library is licensed under the MIT-0 License. See the LICENSE file.
-

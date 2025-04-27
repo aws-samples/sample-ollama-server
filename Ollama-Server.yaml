@@ -1642,17 +1642,20 @@ Resources:
                     # https://github.com/open-webui/open-webui/discussions/4376#discussioncomment-10245922
                     # https://github.com/open-webui/open-webui/discussions/9987#discussioncomment-12313446                 
 
+                    apt-get install -q -y jq
+
                     # LiteLLM config.yaml: build config with available Bedrock models
                     export BEDROCK="${bedrockRegion}"
                     export REGION=`echo $BEDROCK | cut -d" " -f1`
                     sed -i 's/aws_region_code/'"$REGION"'/g' /opt/docker/compose.yaml
 
-                    apt-get install -q -y jq
-                    aws bedrock list-inference-profiles --region $REGION | jq -r '.inferenceProfileSummaries[] | select (.status=="ACTIVE") | "- model_name: \"\(.inferenceProfileName)\"\n  litellm_params:\n    model: bedrock/\(.inferenceProfileId)\n"' > /tmp/model.yaml
+                    aws bedrock list-inference-profiles --region $REGION | jq -r '.inferenceProfileSummaries[] | select (.status=="ACTIVE") | "- model_name: \"\(.inferenceProfileName)\"\n  litellm_params:\n    model: bedrock/\(.inferenceProfileId)\n"' > /tmp/bedrock-models.yaml
                     aws bedrock list-foundation-models --region $REGION | jq -r '.modelSummaries[] | select (.modelLifecycle.status == "ACTIVE" and (.responseStreamingSupported == true) and (.inferenceTypesSupported | contains(["ON_DEMAND"])) and (.outputModalities | contains(["TEXT"])) ) | "- model_name: \"\(.modelName)\"\n  litellm_params:\n    model: bedrock/\(.modelId)\n"' >> /tmp/model.yaml
-                    sed -i 's/^/  /' /tmp/model.yaml
-                    sed -i '1s/^/model_list:\n/' /tmp/model.yaml
-                    cp -f /tmp/model.yaml /opt/docker/bedrock-models.yaml
+                    sed -i '/model\:/a\   \ aws_region_name: '"$REGION"'' /tmp/bedrock-models.yaml
+                    sed -i 's/^/  /' /tmp/bedrock-models.yaml
+                    sed -i '1s/^/model_list:\n/' /tmp/bedrock-models.yaml
+                    cp -f /tmp/bedrock-models.yaml /opt/docker/bedrock-models.yaml
+
                     chown ubuntu:ubuntu -R /opt/docker/*
                     chmod og-rwx /opt/docker/bedrock-models.yaml                    
 
@@ -2160,6 +2163,20 @@ Resources:
                       AWS_ACCESS_KEY_ID: ${bedrockUserAccessKey}
                       AWS_SECRET_ACCESS_KEY: ${bedrockUserAccessKey.SecretAccessKey}
 
+                  litellm-image:
+                    container_name: litellm-image
+                    image: ghcr.io/berriai/litellm:main-latest
+                    entrypoint: "litellm"
+                    command: ["--port", "4100", "--config", "/app/config.yaml" ]
+                    volumes:
+                      - /opt/docker/bedrock-image-models.yaml:/app/config.yaml:ro
+                    network_mode: "host"
+                    restart: always
+                    environment:
+                      AWS_REGION_NAME: us-west-2
+                      AWS_ACCESS_KEY_ID: ${bedrockUserAccessKey}
+                      AWS_SECRET_ACCESS_KEY: ${bedrockUserAccessKey.SecretAccessKey}
+
                   open-webui:
                     container_name: open-webui
                     image: ghcr.io/open-webui/open-webui:cuda
@@ -2181,6 +2198,11 @@ Resources:
                       - ENABLE_OPENAI_API=true
                       - OPENAI_API_BASE_URL=http://127.0.0.1:4000
                       - OPENAI_API_KEY=anything
+                      - IMAGE_GENERATION_ENGINE=openai
+                      - ENABLE_IMAGE_GENERATION=True
+                      - IMAGE_GENERATION_MODEL=Stable Diffusion 3.5 Large
+                      - IMAGES_OPENAI_API_BASE_URL=http://127.0.0.1:4100
+                      - IMAGES_OPENAI_API_KEY=anything
 
                   # https://github.com/beatkind/watchtower: containrrr/watchtower not being maintained
                   watchtower:
@@ -2196,6 +2218,25 @@ Resources:
 
                 volumes:
                   open-webui: {}
+              mode: "000640"
+              owner: "ubuntu"
+              group: "ubuntu"
+            "/opt/docker/bedrock-image-models.yaml":
+              content: |
+                litellm_settings:
+                  drop_params: True
+
+                model_list:              
+                  - model_name: "Stable Diffusion 3.5 Large"
+                    litellm_params:
+                      model: bedrock/stability.sd3-5-large-v1:0
+                      aws_region_name: us-west-2              
+
+                  - model_name: "Stable Image Ultra 1.0"
+                    litellm_params:
+                      model: bedrock/stability.stable-image-ultra-v1:1
+                      aws_region_name: us-west-2
+
               mode: "000640"
               owner: "ubuntu"
               group: "ubuntu"
