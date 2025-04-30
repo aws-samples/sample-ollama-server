@@ -2235,6 +2235,11 @@ Resources:
                       model: bedrock/stability.stable-image-ultra-v1:1
                       aws_region_name: us-west-2
 
+                  - model_name: "Nova Canvas"
+                    litellm_params:
+                      model: bedrock/amazon.nova-canvas-v1:0
+                      aws_region_name: us-east-1
+
               mode: "000640"
               owner: "ubuntu"
               group: "ubuntu"
