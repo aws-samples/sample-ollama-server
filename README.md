@@ -21,7 +21,7 @@ Template provides the following features
   - [Ollama](https://ollama.com/) for running and managing LLMs
   - [Open WebUI](https://openwebui.com/) web interface for interacting with [local Ollama](https://ollama.com/library) and [remote Bedrock](https://docs.aws.amazon.com/bedrock/latest/userguide/models-supported.html) models
     - [Amazon Bedrock](https://aws.amazon.com/bedrock/) model access through [LiteLLM proxy server](https://www.litellm.ai/)
-    - [Image generation](https://docs.openwebui.com/tutorials/images/#using-image-generation) using [Stability AI's](https://stability.ai/) [Stable Diffusion 3.5 Large](https://aws.amazon.com/blogs/aws/stable-diffusion-3-5-large-is-now-available-in-amazon-bedrock/) model in Bedrock (experimental)
+    - [Image generation](https://docs.openwebui.com/tutorials/images/#using-image-generation) with [Stable Diffusion 3.5 Large](https://aws.amazon.com/blogs/aws/stable-diffusion-3-5-large-is-now-available-in-amazon-bedrock/) or [Amazon Nova Canvas](https://aws.amazon.com/blogs/machine-learning/exploring-creative-possibilities-a-visual-guide-to-amazon-nova-canvas/) model (experimental)
 - Remote Administration
   - [Amazon DCV](https://aws.amazon.com/hpc/dcv/) remote display protocol server for graphical desktop access (optional)
   - [SSM Session Manager](https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager.html)  secure shell access 
@@ -49,8 +49,8 @@ By using the template, you accept license agreement of all software that is inst
 ## Requirements
 - EC2 instance must be provisioned in a subnet with IPv4 internet connectivity
 - Check the [On-Demand Instance quota](https://docs.aws.amazon.com/ec2/latest/instancetypes/ec2-instance-quotas.html#on-demand-instance-quotas) value of your desired instance type and request quota increase where necessary
-- [Request access](https://docs.aws.amazon.com/bedrock/latest/userguide/model-access-modify.html) to foundational models in desired [Bedrock Region](https://docs.aws.amazon.com/bedrock/latest/userguide/models-regions.html)
-- To use Open WebUI [image generation](https://docs.openwebui.com/tutorials/images/#using-image-generation) feature, request access to `Stable Diffusion 3.5 Large` model in [us-west-2 Region](https://us-west-2.console.aws.amazon.com/bedrock/home?region=us-west-2#/modelaccess)
+- [Request access](https://docs.aws.amazon.com/bedrock/latest/userguide/model-access-modify.html) to models in desired [Bedrock Region](https://docs.aws.amazon.com/bedrock/latest/userguide/models-regions.html)
+- To use Open WebUI [image generation](https://docs.openwebui.com/tutorials/images/#using-image-generation) feature, request access to `Stable Diffusion 3.5 Large` and `Stable Image Ultra v1.0` models in [us-west-2 Region](https://us-west-2.console.aws.amazon.com/bedrock/home?region=us-west-2#/modelaccess) and optionally `Amazon Nova Canvas` model in [us-east-1 Region](https://us-east-1.console.aws.amazon.com/bedrock/home?region=us-east-1#/modelaccess)
 - To use [Application Load Balancer (ALB)](https://aws.amazon.com/elasticloadbalancing/application-load-balancer/) with HTTPS, either [request a public certificate](https://docs.aws.amazon.com/acm/latest/userguide/acm-public-certificates.html) or [import a certificate](https://docs.aws.amazon.com/acm/latest/userguide/import-certificate.html) into [AWS Certificate Manager](https://aws.amazon.com/certificate-manager/)
 
 
@@ -175,8 +175,22 @@ If you need more powerful instance , you can [change instance type](https://docs
 ### Disk space considerations
 If you are running out of disk space to download models, [increase EBS volume](https://docs.aws.amazon.com/ebs/latest/userguide/requesting-ebs-volume-modifications.html) and [extend file system](https://docs.aws.amazon.com/ebs/latest/userguide/recognize-expanded-volume-linux.html)
 
-### Customisation
-[Docker compose](https://docs.docker.com/compose/) is used to run Open WebUI and LiteLLM. You can customise [Open WebUI](https://docs.openwebui.com/getting-started/env-configuration/) and [LiteLLM Proxy Server](https://docs.litellm.ai/docs/proxy/configs) configuration by modifying `/opt/docker/compose.yaml`. Amazon Bedrock text and image models are specified in `/opt/docker/bedrock-models.yaml` and `/opt/docker/bedrock-image-models.yaml` respectively.
+### Configuration
+[Docker compose](https://docs.docker.com/compose/) is used to run Open WebUI and LiteLLM. You can customise [Open WebUI](https://docs.openwebui.com/getting-started/env-configuration/) and [LiteLLM Proxy Server](https://docs.litellm.ai/docs/proxy/configs) configuration by modifying `/opt/docker/compose.yaml`. 
+
+
+### Amazon Bedrock models
+To add or remove [Amazon Bedrock](https://docs.litellm.ai/docs/providers/bedrock) or [Amazon SageMaker](https://docs.litellm.ai/docs/providers/aws_sagemaker) text or image models, modify `/opt/docker/bedrock-models.yaml` and `/opt/docker/bedrock-image-models.yaml` respectively.
+
+
+### Image generation model selection
+To change default image generation model
+- In Open WebUI, navigate to **Settings** > **Admin Settings** > **Images** menu
+- In **Set Default Model** text box, enter one of the following
+  - Nova Canvas
+  - Stable Diffusion 3.5 Large
+  - Stable Image Ultra 1.0
+- Click **Save**
 
 ### Remote connectivity to underlying services
 Nginx (`/etc/nginx/sites-available/reverse-proxy`) is used to provide HTTP and [HTTPS](https://docs.openwebui.com/getting-started/advanced-topics/https-encryption/) access to Open WebUI which listens on TCP port 8080.
