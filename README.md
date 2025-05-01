@@ -55,7 +55,8 @@ By using the template, you accept license agreement of all software that is inst
 
 
 ## Deploying using CloudFormation console
-Download [Ollama-Server.yaml](Ollama-Server.yaml) file. 
+Download [Ollama-Server.yaml](Ollama-Server.yaml). (Use [Ollama-Server-noGPU.yaml](Ollama-Server-noGPU.yaml) if you do not want a GPU EC2 instance. *Note that the response will be slow.*)
+
 
 Login to AWS [CloudFormation console](https://console.aws.amazon.com/cloudformation/home#/stacks/create/template). Choose **[Create Stack](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cfn-console-create-stack.html#create-stack)**, **Upload a template file**, **Choose File**, select your .YAML file and choose **Next**. Enter a **Stack name** and specify parameters values.
 
@@ -72,7 +73,7 @@ EC2 Instance
 - `ec2Name`: EC2 instance name
 - `ec2KeyPair`: [EC2 key pair](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-key-pairs.html) name. [Create key pair](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/create-key-pairs.html) if necessary
 - `osVersion` : Ubuntu/Ubuntu Pro 24.04/22.04 (x86_64/arm64). Default is `Ubuntu 24.04 (x86_64)`.
-- `instanceType`: NVIDIA GPU EC2 [instance types](https://aws.amazon.com/ec2/instance-types/). Do ensure type matches processor architecture (x86_64 or arm64). Default is `g4dn.xlarge`
+- `instanceType`: EC2 [instance type](https://aws.amazon.com/ec2/instance-types/). Do ensure type matches processor architecture (x86_64 or arm64). Default is `g4dn.xlarge`
 - `ec2TerminationProtection`: enable [EC2 termination protection](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/Using_ChangingDisableAPITermination.html) to prevent accidental deletion. Default is `Yes`
 
 EC2 Network
