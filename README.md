@@ -10,7 +10,9 @@ This repo provides a [AWS CloudFormation](https://aws.amazon.com/cloudformation/
 
 ## Demo
 
-https://github.com/user-attachments/assets/a92efc26-1171-4f15-97e6-c1cf0eb53556
+
+https://github.com/user-attachments/assets/29cb20f0-5900-49d9-92e4-6c06c97bf0f3
+
 
 
 ## Architecture Diagram
