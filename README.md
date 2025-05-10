@@ -8,6 +8,11 @@ This repo provides a [AWS CloudFormation](https://aws.amazon.com/cloudformation/
 <img alt="Ollama with Amazon DCV" src="images/ollama-dcv.png">
 
 
+## Demo
+
+https://github.com/user-attachments/assets/a92efc26-1171-4f15-97e6-c1cf0eb53556
+
+
 ## Architecture Diagram
 <img alt="architecture" src="images/ollama-server.png">
 
@@ -34,6 +39,7 @@ Template provides the following features
 
 
 *EC2 instance can be provisioned in AWS Region that does not support Bedrock*
+
 
 ## Notice
 Although this repository is released under the [MIT-0](LICENSE) license, its CloudFormation template uses third party components which are released under the following respective licenses
@@ -175,7 +181,11 @@ Refer to [Starting With Ollama](https://docs.openwebui.com/getting-started/quick
 If you need more powerful instance , you can [change instance type](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/change-instance-type-of-ebs-backed-instance.html).
 
 ### Disk space considerations
-If you are running out of disk space to download models, [increase EBS volume](https://docs.aws.amazon.com/ebs/latest/userguide/requesting-ebs-volume-modifications.html) and [extend file system](https://docs.aws.amazon.com/ebs/latest/userguide/recognize-expanded-volume-linux.html)
+If you are running out of d
+
+
+
+isk space to download models, [increase EBS volume](https://docs.aws.amazon.com/ebs/latest/userguide/requesting-ebs-volume-modifications.html) and [extend file system](https://docs.aws.amazon.com/ebs/latest/userguide/recognize-expanded-volume-linux.html)
 
 ### Configuration
 [Docker compose](https://docs.docker.com/compose/) is used to run Open WebUI and LiteLLM. You can customise [Open WebUI](https://docs.openwebui.com/getting-started/env-configuration/) and [LiteLLM Proxy Server](https://docs.litellm.ai/docs/proxy/configs) configuration by modifying `/opt/docker/compose.yaml`. 
