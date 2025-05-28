@@ -183,11 +183,7 @@ Refer to [Starting With Ollama](https://docs.openwebui.com/getting-started/quick
 If you need more powerful instance , you can [change instance type](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/change-instance-type-of-ebs-backed-instance.html).
 
 ### Disk space considerations
-If you are running out of d
-
-
-
-isk space to download models, [increase EBS volume](https://docs.aws.amazon.com/ebs/latest/userguide/requesting-ebs-volume-modifications.html) and [extend file system](https://docs.aws.amazon.com/ebs/latest/userguide/recognize-expanded-volume-linux.html)
+If you are running out of disk space to download models, [increase EBS volume](https://docs.aws.amazon.com/ebs/latest/userguide/requesting-ebs-volume-modifications.html) and [extend file system](https://docs.aws.amazon.com/ebs/latest/userguide/recognize-expanded-volume-linux.html)
 
 ### Configuration
 [Docker compose](https://docs.docker.com/compose/) is used to run Open WebUI and LiteLLM. You can customise [Open WebUI](https://docs.openwebui.com/getting-started/env-configuration/) and [LiteLLM Proxy Server](https://docs.litellm.ai/docs/proxy/configs) configuration by modifying `/opt/docker/compose.yaml`. 
