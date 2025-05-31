@@ -243,9 +243,11 @@ Refer to Certbot site for [help](https://certbot.eff.org/pages/help) with the to
 ## About EC2 instance
 
 ### Updating software
-Ubuntu [unattended upgrades](https://help.ubuntu.com/community/AutomaticSecurityUpdates) is enabled. 
-Open WebUI and LiteLLM are automatically updated by [Watchtower](https://docs.openwebui.com/getting-started/updating/#automatically-updating-open-webui-with-watchtower). 
-To [update Ollama](https://github.com/ollama/ollama/blob/main/docs/faq.md#how-can-i-upgrade-ollama), run `/home/ubuntu/update-ollama` script. 
+Ubuntu [unattended upgrades](https://help.ubuntu.com/community/AutomaticSecurityUpdates) is enabled. To [update Ollama](https://github.com/ollama/ollama/blob/main/docs/faq.md#how-can-i-upgrade-ollama), run `/home/ubuntu/update-ollama` script. 
+
+Open WebUI and LiteLLM are automatically updated by [Watchtower](https://docs.openwebui.com/getting-started/updating/#automatically-updating-open-webui-with-watchtower). Run [`docker image prune`](https://docs.docker.com/reference/cli/docker/image/prune/) regularly to remove unused iamges.
+
+
 
 ### Restoring from backup
 If you enable AWS Backup, you can restore your [EC2 instance](https://docs.aws.amazon.com/aws-backup/latest/devguide/restoring-ec2.html) from recovery points (backups) in your [backup vault](https://docs.aws.amazon.com/aws-backup/latest/devguide/vaults.html). The CloudFormation template creates an IAM role that grants AWS Backup permission to restore your backups. Role name can be located in your CoudFormation stack Resources section as the Physical ID value whose Logical ID value is `backupRestoreRole`
