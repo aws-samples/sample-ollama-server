@@ -21,8 +21,8 @@ https://github.com/user-attachments/assets/29cb20f0-5900-49d9-92e4-6c06c97bf0f3
 
 ## Overview of Features
 Template provides the following features
-- NVIDIA GPU EC2 instance. Supported instance types include
-  - x86_64: [G4dn](https://aws.amazon.com/ec2/instance-types/g4/#Product_Details), [G5](https://aws.amazon.com/ec2/instance-types/g5/), [G6](https://aws.amazon.com/ec2/instance-types/g6/#Product_details), [Gr6](https://aws.amazon.com/ec2/instance-types/g6/#Product_details), [G6e](https://aws.amazon.com/ec2/instance-types/g6e/), [P4d](https://aws.amazon.com/ec2/instance-types/p4/#Product_details), [P4de](https://aws.amazon.com/ec2/instance-types/p4/#Product_details), [P5](https://aws.amazon.com/ec2/instance-types/p5/#Product_details), [P5e](https://aws.amazon.com/ec2/instance-types/p5/#Product_details), [P5en](https://aws.amazon.com/ec2/instance-types/p5/#Product_details)
+- NVIDIA GPU EC2 instance
+  - x86_64: [G4dn](https://aws.amazon.com/ec2/instance-types/g4/#Product_Details), [G5](https://aws.amazon.com/ec2/instance-types/g5/), [G6](https://aws.amazon.com/ec2/instance-types/g6/#Product_details), [Gr6](https://aws.amazon.com/ec2/instance-types/g6/#Product_details), [G6e](https://aws.amazon.com/ec2/instance-types/g6e/), [P4d](https://aws.amazon.com/ec2/instance-types/p4/#Product_details), [P4de](https://aws.amazon.com/ec2/instance-types/p4/#Product_details), [P5](https://aws.amazon.com/ec2/instance-types/p5/#Product_details), [P5e](https://aws.amazon.com/ec2/instance-types/p5/#Product_details), [P5en](https://aws.amazon.com/ec2/instance-types/p5/#Product_details), [P6](https://aws.amazon.com/ec2/instance-types/p6/)
   - arm64: [G5g](https://aws.amazon.com/ec2/instance-types/g5g/)
 - [Generative AI](https://aws.amazon.com/ai/generative-ai/) applications
   - [Ollama](https://ollama.com/) for running and managing LLMs
@@ -56,15 +56,14 @@ By using the template, you accept license agreement of all software that is inst
 
 ## Requirements
 - EC2 instance must be provisioned in a subnet with IPv4 internet connectivity
-- Check the [On-Demand Instance quota](https://docs.aws.amazon.com/ec2/latest/instancetypes/ec2-instance-quotas.html#on-demand-instance-quotas) value of your desired instance type and request quota increase where necessary
+- Check the [On-Demand Instance quota](https://docs.aws.amazon.com/ec2/latest/instancetypes/ec2-instance-quotas.html#on-demand-instance-quotas) (`Running On-Demand G and VT instances` or `Running On-Demand P instances`) value of your desired instance type and request quota increase where necessary
 - [Request access](https://docs.aws.amazon.com/bedrock/latest/userguide/model-access-modify.html) to models in desired [Bedrock Region](https://docs.aws.amazon.com/bedrock/latest/userguide/models-regions.html)
 - To use Open WebUI [image generation](https://docs.openwebui.com/tutorials/images/#using-image-generation) feature, request access to `Stable Diffusion 3.5 Large` and `Stable Image Ultra v1.0` models in [us-west-2 Region](https://us-west-2.console.aws.amazon.com/bedrock/home?region=us-west-2#/modelaccess) and optionally `Amazon Nova Canvas` model in [us-east-1 Region](https://us-east-1.console.aws.amazon.com/bedrock/home?region=us-east-1#/modelaccess)
 - To use [Application Load Balancer (ALB)](https://aws.amazon.com/elasticloadbalancing/application-load-balancer/) with HTTPS, either [request a public certificate](https://docs.aws.amazon.com/acm/latest/userguide/acm-public-certificates.html) or [import a certificate](https://docs.aws.amazon.com/acm/latest/userguide/import-certificate.html) into [AWS Certificate Manager](https://aws.amazon.com/certificate-manager/)
 
 
 ## Deploying using CloudFormation console
-Download [Ollama-Server.yaml](Ollama-Server.yaml). 
-( Use [Ollama-Server-noGPU.yaml](Ollama-Server-noGPU.yaml) if you do not want a GPU EC2 instance. *Note that the response from local Ollama models will be slow.* )
+Download [Ollama-Server.yaml](Ollama-Server.yaml). (Use [Ollama-Server-noGPU.yaml](Ollama-Server-noGPU.yaml) if you do not want a GPU EC2 instance. *Note that the response from local Ollama models will be slow.* )
 
 
 Login to AWS [CloudFormation console](https://console.aws.amazon.com/cloudformation/home#/stacks/create/template). Choose **[Create Stack](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cfn-console-create-stack.html#create-stack)**, **Upload a template file**, **Choose File**, select your .YAML file and choose **Next**. Enter a **Stack name** and specify parameters values.
@@ -177,7 +176,7 @@ To troubleshoot any installation issue, you can view contents of the following l
 ## Using Ollama and Open WebUI
 
 ### Managing models
-Refer to [Starting With Ollama](https://docs.openwebui.com/getting-started/quick-start/starting-with-ollama/) for guidance on managing models. Ollama [site](https://ollama.com/search) provides a listing of available language models and their size (e.g. [DeepSeek](https://ollama.com/library/deepseek-r1/tags)). For best performance, ensure that model size is less than GPU memory size. You can refer to [EC2 Accelerated Computing page](https://aws.amazon.com/ec2/instance-types/#Accelerated_Computing) for GPU memory size specifications.
+Refer to [Starting With Ollama](https://docs.openwebui.com/getting-started/quick-start/starting-with-ollama/) for model management instructions. Ollama [site](https://ollama.com/search) provides a listing of available language models and their size (e.g. [DeepSeek](https://ollama.com/library/deepseek-r1/tags)). For best performance, ensure that model size is less than GPU memory size. You can refer to [EC2 Accelerated Computing page](https://aws.amazon.com/ec2/instance-types/#Accelerated_Computing) for GPU memory size specifications.
 
 ### Change EC2 instance type
 If you need more powerful instance , you can [change instance type](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/change-instance-type-of-ebs-backed-instance.html).
