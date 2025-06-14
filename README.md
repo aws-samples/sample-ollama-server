@@ -12,11 +12,11 @@ This repo provides a [AWS CloudFormation](https://aws.amazon.com/cloudformation/
 
 <https://github.com/user-attachments/assets/29cb20f0-5900-49d9-92e4-6c06c97bf0f3>
 
-# Architecture Diagram
+## Architecture Diagram
 
 <img alt="architecture" src="images/ollama-server.png">
 
-# Overview of Features
+## Overview of Features
 
 Template provides the following features
 
