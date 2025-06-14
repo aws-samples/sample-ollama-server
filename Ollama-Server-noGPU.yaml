@@ -1000,6 +1000,8 @@ Mappings:
       PrefixList: pl-c0aa4fa9
     ap-east-1:
       PrefixList: pl-14b2577d
+    ap-east-2:
+      PrefixList: pl-0b51e244975ca1f58
     ap-northeast-1:
       PrefixList: pl-58a04531
     ap-northeast-2:
@@ -1691,7 +1693,7 @@ Resources:
               content: |
                 {
                     "agent": {
-                        "metrics_collection_interval": 60,
+                        "metrics_collection_interval": 300,
                         "run_as_user": "cwagent"
                     },
                     "metrics": {
@@ -1734,10 +1736,19 @@ Resources:
                 mkdir -p /tmp/cfn
                 cd /tmp/cfn
 
+                # Change password
+                PWD=$(cat /var/lib/cloud/data/instance-id)
+                USER=ubuntu
+                echo "$USER:$PWD" | chpasswd
+
                 # Update OS
                 apt-get update -q
                 apt-get upgrade -q -y
                 apt-get autoremove -q -y
+
+                # Unattended 
+                apt-get install -q -y unattended-upgrades
+                sed -i '/\/\/Unattended-Upgrade::Automatic-Reboot "false";/a Unattended-Upgrade::Automatic-Reboot "true";' /etc/apt/apt.conf.d/50unattended-upgrades
 
                 # CloudWatch agent: https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/install-CloudWatch-Agent-commandline-fleet.html#download-CloudWatch-Agent-on-EC2-Instance-commandline-fleet
                 if (arch | grep -q x86); then
@@ -1788,7 +1799,7 @@ Resources:
                   sudo snap install certbot-dns-route53
                 else
                   apt-get install -q -y python3-certbot python3-certbot-apache python3-certbot-nginx python3-certbot-dns-route53
-                fi    
+                fi
 
                 rm -f ${!0}
               mode: "000740"
@@ -2143,10 +2154,12 @@ Resources:
           export DEBIAN_FRONTEND=noninteractive
 
           systemctl stop apt-daily.timer apt-daily-upgrade.timer
+          apt-get clean all
           apt-get update -q
-          sleep 10
+          sleep 15
           pkill apt
           pkill dpkg
+          apt-get install -q -y wget tmux unzip tar curl sed
 
           # CfN scripts: https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cfn-helper-scripts-reference.html
           apt-get install -q -y python3 python3-pip python3-setuptools python3-docutils python3-daemon >> /var/log/install-sw.log 2>&1
@@ -2773,7 +2786,7 @@ Outputs:
   EC2console:
     Description: EC2 console
     Value: !Sub
-      - "https://${AWS::Region}.${url}/ec2/home?region=${AWS::Region}#Instances:search=${ec2Instance}"
+      - "https://${AWS::Region}.${url}/ec2/home?region=${AWS::Region}#InstanceDetails:instanceId=${ec2Instance}"
       - url:
           !FindInMap [
             ConsoleUrl,
@@ -2816,7 +2829,7 @@ Outputs:
     Condition: installDCV
     Description: DCV web browser client (login as ubuntu)
     Value: !Sub
-      - "https://${IpAddress}:8443"
+      - "https://${IpAddress}:8443          ( dcv://${IpAddress}:8443 )"
       - IpAddress:
           !If [
             displayPublicIP,
@@ -2848,7 +2861,7 @@ Outputs:
     Condition: createCloudFront
     Description: CloudFront console
     Value: !Sub
-      - "https://${url}/cloudfront/home#/distributions/${cf}"
+      - "https://${url}/cloudfront/home#/distributions/${cfDistribution.Id}?region=${AWS::Region}"
       - {
           cf:
             !If [
