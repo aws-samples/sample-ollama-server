@@ -168,7 +168,7 @@ If `enableALB` is `Yes`
 
 If `enableCloudFront` is `Yes`
 
-- `CloudFrontConsole` : CloudFront console URL link
+- `CloudFrontConsole` : CloudFront console URL link. Adjustment of your CloudFront distribution settings may be required.
 - `CloudFrontURL` : CloudFront distribution URL, e.g. `https://d111111abcdef8.cloudfront.net`
 
 \** *Go to EC2, ALB, or CloudFront URL and create an administrative account immediately*
@@ -186,7 +186,7 @@ To troubleshoot any installation issue, you can view contents of the following l
 
 ### Managing models
 
-Refer to [Starting With Ollama](https://docs.openwebui.com/getting-started/quick-start/starting-with-ollama/) for model management instructions. Ollama [site](https://ollama.com/search) provides a listing of available language models and their size (e.g. [DeepSeek](https://ollama.com/library/deepseek-r1/tags)). For best performance, ensure that model size is less than GPU memory size. You can refer to [EC2 Accelerated Computing page](https://aws.amazon.com/ec2/instance-types/#Accelerated_Computing) for GPU memory size specifications.
+Refer to [Starting With Ollama](https://docs.openwebui.com/getting-started/quick-start/starting-with-ollama/#a-quick-and-efficient-way-to-download-models) for model management instructions. Ollama [site](https://ollama.com/search) provides a listing of available language models and their size (e.g. [DeepSeek](https://ollama.com/library/deepseek-r1/tags)). For best performance, ensure that model size is less than GPU memory size. You can refer to [EC2 Accelerated Computing page](https://aws.amazon.com/ec2/instance-types/#Accelerated_Computing) for GPU memory size specifications.
 
 ### Change EC2 instance type
 

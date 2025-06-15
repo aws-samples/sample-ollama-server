@@ -1778,7 +1778,8 @@ Resources:
                             "nvidia_gpu": {
                                 "measurement": [
                                     "utilization_gpu",
-                                    "memory_used"
+                                    "memory_used",
+                                    "memory_free"                                    
                                 ]
                             }
                         }
