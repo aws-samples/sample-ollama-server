@@ -1813,6 +1813,10 @@ Resources:
                 apt-get upgrade -q -y
                 apt-get autoremove -q -y
 
+                # Unattended 
+                apt-get install -q -y unattended-upgrades
+                sed -i '/\/\/Unattended-Upgrade::Automatic-Reboot "false";/a Unattended-Upgrade::Automatic-Reboot "true";' /etc/apt/apt.conf.d/50unattended-upgrades
+
                 # CloudWatch agent: https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/install-CloudWatch-Agent-commandline-fleet.html#download-CloudWatch-Agent-on-EC2-Instance-commandline-fleet
                 if (arch | grep -q x86); then
                   curl -s -L -O https://amazoncloudwatch-agent.s3.amazonaws.com/ubuntu/amd64/latest/amazon-cloudwatch-agent.deb
@@ -2303,7 +2307,7 @@ Resources:
       IamInstanceProfile: !Ref instanceProfile
       KeyName: !Ref ec2KeyPair
       SubnetId: !Ref subnetID
-      Monitoring: true
+      Monitoring: false
       DisableApiTermination: !If [enableProtection, true, false]
       EbsOptimized: true
       SecurityGroupIds:

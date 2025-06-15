@@ -2123,7 +2123,7 @@ Resources:
       IamInstanceProfile: !Ref instanceProfile
       KeyName: !Ref ec2KeyPair
       SubnetId: !Ref subnetID
-      Monitoring: true
+      Monitoring: false
       DisableApiTermination: !If [enableProtection, true, false]
       EbsOptimized: true
       SecurityGroupIds:
