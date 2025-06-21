@@ -2086,7 +2086,7 @@ Resources:
               group: "ubuntu"
             "/opt/docker/cron-docker-image-prune":
               content: |
-                0 0 * * * /usr/bin/docker image prune -a -f
+                0 0 0 * * /usr/bin/docker image prune -a -f
               mode: "000640"
               owner: "ubuntu"
               group: "ubuntu"
