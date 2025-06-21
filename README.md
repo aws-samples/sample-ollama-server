@@ -260,7 +260,7 @@ Refer to Certbot site for [help](https://certbot.eff.org/pages/help) with the to
 
 Ubuntu [unattended upgrades](https://help.ubuntu.com/community/AutomaticSecurityUpdates) is enabled. To [update Ollama](https://github.com/ollama/ollama/blob/main/docs/faq.md#how-can-i-upgrade-ollama), run `/home/ubuntu/update-ollama` script.
 
-Open WebUI and LiteLLM are automatically updated by [Watchtower](https://docs.openwebui.com/getting-started/updating/#automatically-updating-open-webui-with-watchtower). Run [`docker image prune`](https://docs.docker.com/reference/cli/docker/image/prune/) regularly to remove unused images.
+Open WebUI and LiteLLM are automatically updated by [Watchtower](https://docs.openwebui.com/getting-started/updating/#automatically-updating-open-webui-with-watchtower), while a cron job runs [`docker image prune`](https://docs.docker.com/reference/cli/docker/image/prune/) daily to remove unused images.
 
 ### Restoring from backup
 

@@ -1710,6 +1710,9 @@ Resources:
                     ;;
                 esac
 
+                # https://docs.docker.com/reference/cli/docker/image/prune/ 
+                crontab -u ubuntu /opt/docker/cron-docker-image-prune
+
                 # CloudWatch agent with GPU metrics
                 /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c file:/opt/aws/amazon-cloudwatch-agent/bin/config.json -s
                 systemctl enable --now amazon-cloudwatch-agent
@@ -2262,6 +2265,12 @@ Resources:
                       model: bedrock/amazon.nova-canvas-v1:0
                       aws_region_name: us-east-1
 
+              mode: "000640"
+              owner: "ubuntu"
+              group: "ubuntu"
+            "/opt/docker/cron-docker-image-prune":
+              content: |
+                0 0 * * * /usr/bin/docker image prune -a -f
               mode: "000640"
               owner: "ubuntu"
               group: "ubuntu"

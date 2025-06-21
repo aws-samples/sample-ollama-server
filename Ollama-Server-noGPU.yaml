@@ -1654,6 +1654,9 @@ Resources:
                     ;;
                 esac
 
+                # https://docs.docker.com/reference/cli/docker/image/prune/ 
+                crontab -u ubuntu /opt/docker/cron-docker-image-prune
+
                 apt-get update
                 apt-get upgrade -q -y
 
@@ -2078,6 +2081,12 @@ Resources:
                       model: bedrock/amazon.nova-canvas-v1:0
                       aws_region_name: us-east-1
 
+              mode: "000640"
+              owner: "ubuntu"
+              group: "ubuntu"
+            "/opt/docker/cron-docker-image-prune":
+              content: |
+                0 0 * * * /usr/bin/docker image prune -a -f
               mode: "000640"
               owner: "ubuntu"
               group: "ubuntu"
