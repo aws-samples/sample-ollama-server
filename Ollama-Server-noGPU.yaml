@@ -1203,7 +1203,7 @@ Resources:
         - Key: StackId
           Value: !Ref AWS::StackId
         - Key: GitHub
-          Value: https://github.com/aws-samples/ollama-server
+          Value: https://github.com/aws-samples/sample-ollama-server
 
   instanceProfile:
     Type: AWS::IAM::InstanceProfile
@@ -1357,7 +1357,7 @@ Resources:
                   !Split ["-", !Select [2, !Split ["/", !Ref AWS::StackId]]],
                 ]
         - Key: GitHub
-          Value: https://github.com/aws-samples/ollama-server
+          Value: https://github.com/aws-samples/sample-ollama-server
 
   securityGroupForCloudFrontHTTP:
     Type: AWS::EC2::SecurityGroup
@@ -1393,7 +1393,7 @@ Resources:
                   !Split ["-", !Select [2, !Split ["/", !Ref AWS::StackId]]],
                 ]
         - Key: GitHub
-          Value: https://github.com/aws-samples/ollama-server
+          Value: https://github.com/aws-samples/sample-ollama-server
 
   securityGroupForCloudFrontHTTPS:
     Type: AWS::EC2::SecurityGroup
@@ -1429,7 +1429,7 @@ Resources:
                   !Split ["-", !Select [2, !Split ["/", !Ref AWS::StackId]]],
                 ]
         - Key: GitHub
-          Value: https://github.com/aws-samples/ollama-server
+          Value: https://github.com/aws-samples/sample-ollama-server
 
   iamBedrockUser:
     Type: AWS::IAM::User
@@ -2207,7 +2207,7 @@ Resources:
         - Key: StackId
           Value: !Ref AWS::StackId
         - Key: GitHub
-          Value: https://github.com/aws-samples/ollama-server
+          Value: https://github.com/aws-samples/sample-ollama-server
 
   elasticIP:
     Condition: useElasticIP
@@ -2230,7 +2230,7 @@ Resources:
                   !Split ["-", !Select [2, !Split ["/", !Ref AWS::StackId]]],
                 ]
         - Key: GitHub
-          Value: https://github.com/aws-samples/ollama-server
+          Value: https://github.com/aws-samples/sample-ollama-server
 
   albHttpListener:
     Type: AWS::ElasticLoadBalancingV2::Listener
@@ -2316,7 +2316,7 @@ Resources:
         - Key: StackId
           Value: !Ref AWS::StackId
         - Key: GitHub
-          Value: https://github.com/aws-samples/ollama-server
+          Value: https://github.com/aws-samples/sample-ollama-server
       TargetType: instance
       Targets:
         - Id: !Ref ec2Instance
@@ -2405,7 +2405,7 @@ Resources:
                   !Split ["-", !Select [2, !Split ["/", !Ref AWS::StackId]]],
                 ]
         - Key: GitHub
-          Value: https://github.com/aws-samples/ollama-server
+          Value: https://github.com/aws-samples/sample-ollama-server
 
   albLoggingBucket:
     Type: AWS::S3::Bucket
@@ -2430,7 +2430,7 @@ Resources:
         - Key: StackId
           Value: !Ref AWS::StackId
         - Key: GitHub
-          Value: https://github.com/aws-samples/ollama-server
+          Value: https://github.com/aws-samples/sample-ollama-server
 
   albLoggingBucketPolicy:
     Type: AWS::S3::BucketPolicy
@@ -2496,7 +2496,7 @@ Resources:
         - Key: StackId
           Value: !Ref AWS::StackId
         - Key: GitHub
-          Value: https://github.com/aws-samples/ollama-server
+          Value: https://github.com/aws-samples/sample-ollama-server
 
   backupPlan:
     Type: AWS::Backup::BackupPlan
@@ -2527,7 +2527,7 @@ Resources:
         {
           "StackName": !Ref AWS::StackName,
           "StackId": !Ref AWS::StackId,
-          "GitHub": "https://github.com/aws-samples/ollama-server",
+          "GitHub": "https://github.com/aws-samples/sample-ollama-server",
         }
 
   backupVault:
@@ -2546,7 +2546,7 @@ Resources:
         {
           "StackName": !Ref AWS::StackName,
           "StackId": !Ref AWS::StackId,
-          "GitHub": "https://github.com/aws-samples/ollama-server",
+          "GitHub": "https://github.com/aws-samples/sample-ollama-server",
         }
 
   backupSelection:
@@ -2595,7 +2595,7 @@ Resources:
         - Key: StackId
           Value: !Ref AWS::StackId
         - Key: GitHub
-          Value: https://github.com/aws-samples/ollama-server
+          Value: https://github.com/aws-samples/sample-ollama-server
 
   cfVpcOrigin:
     Type: AWS::CloudFront::VpcOrigin
@@ -2620,7 +2620,7 @@ Resources:
         - Key: StackId
           Value: !Ref AWS::StackId
         - Key: GitHub
-          Value: https://github.com/aws-samples/ollama-serverx
+          Value: https://github.com/aws-samples/sample-ollama-serverx
 
   cfDistribution:
     Type: AWS::CloudFront::Distribution
@@ -2681,7 +2681,7 @@ Resources:
         - Key: StackId
           Value: !Ref AWS::StackId
         - Key: GitHub
-          Value: https://github.com/aws-samples/ollama-server
+          Value: https://github.com/aws-samples/sample-ollama-server
 
   cfDistributionWithLogging:
     Type: AWS::CloudFront::Distribution
@@ -2744,7 +2744,7 @@ Resources:
         - Key: StackId
           Value: !Ref AWS::StackId
         - Key: GitHub
-          Value: https://github.com/aws-samples/ollama-server
+          Value: https://github.com/aws-samples/sample-ollama-server
 
   cfS3BucketPolicy:
     Type: AWS::S3::BucketPolicy
@@ -2789,7 +2789,7 @@ Resources:
         - Key: StackId
           Value: !Ref AWS::StackId
         - Key: GitHub
-          Value: https://github.com/aws-samples/ollama-server
+          Value: https://github.com/aws-samples/sample-ollama-server
 
 Outputs:
   EC2console:
