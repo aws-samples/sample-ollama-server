@@ -59,6 +59,9 @@ By using the template, you accept license agreement of all software that is inst
 - [Request access](https://docs.aws.amazon.com/bedrock/latest/userguide/model-access-modify.html) to models in desired [Bedrock Region](https://docs.aws.amazon.com/bedrock/latest/userguide/models-regions.html)
 - To use Open WebUI [image generation](https://docs.openwebui.com/tutorials/images/#using-image-generation) feature, request access to `Stable Diffusion 3.5 Large` and `Stable Image Ultra v1.0` models in [us-west-2 Region](https://us-west-2.console.aws.amazon.com/bedrock/home?region=us-west-2#/modelaccess) and optionally `Amazon Nova Canvas` model in [us-east-1 Region](https://us-east-1.console.aws.amazon.com/bedrock/home?region=us-east-1#/modelaccess)
 - To use [Application Load Balancer (ALB)](https://aws.amazon.com/elasticloadbalancing/application-load-balancer/) with HTTPS, either [request a public certificate](https://docs.aws.amazon.com/acm/latest/userguide/acm-public-certificates.html) or [import a certificate](https://docs.aws.amazon.com/acm/latest/userguide/import-certificate.html) into [AWS Certificate Manager](https://aws.amazon.com/certificate-manager/)
+- To use [Amazon CloudFront](https://aws.amazon.com/cloudfront/) with EC2 instance as origin, the following must be enabled
+  - [VPC DNS](https://docs.aws.amazon.com/vpc/latest/userguide/AmazonDNS-concepts.html#vpc-dns-support) attribute `enableDnsSupport` and `enableDnsHostnames`
+  - [Resource-based name (RBN)](https://docs.aws.amazon.com/vpc/latest/userguide/configure-subnets.html#subnet-settings) attribute `Enable resource name DNS A record on launch`
 
 ## Deploying using CloudFormation console
 
