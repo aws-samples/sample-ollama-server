@@ -42,10 +42,10 @@ Template provides the following features
 
 ## Notice
 
-Although this repository is released under the [MIT-0](LICENSE) license, its CloudFormation template uses third party components which are released under the following respective licenses
+Although this repository is released under the [MIT-0](LICENSE) license, its CloudFormation template uses third party components which are released under the following respective licenses 
 
 - [Ollama](https://github.com/ollama/ollama): [MIT](https://github.com/ollama/ollama/blob/main/LICENSE) license
-- [Open WebUI](https://github.com/open-webui/open-webui): [BSD-3-Clause](https://github.com/open-webui/open-webui/blob/main/LICENSE) license
+- [Open WebUI](https://github.com/open-webui/open-webui): [BSD-3](https://github.com/open-webui/open-webui/blob/main/LICENSE) based license. More information at [Open WebUI License](https://docs.openwebui.com/license/)
 - [LiteLLM](https://github.com/BerriAI/litellm):  [MIT](https://github.com/BerriAI/litellm/blob/main/LICENSE) license
 
 Usage of [Amazon DCV](https://aws.amazon.com/hpc/dcv/) indicates acceptance of [DCV EULA](https://www.amazondcv.com/eula.html).
