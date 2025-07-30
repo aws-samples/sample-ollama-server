@@ -277,6 +277,12 @@ Parameters:
       - g6e.24xlarge (L40S - 4 x 48 GB GPU memory)
       - g6e.48xlarge (L40S - 8 x 48 GB GPU memory)
 
+      - g6f.large (L4 - 3 GB GPU memory)
+      - g6f.xlarge (L4 - 3 GB GPU memory)
+      - g6f.2xlarge (L4 - 6 GB GPU memory)
+      - g6f.4xlarge (L4 - 12 GB GPU memory)
+      - gr6f.4xlarge L4 - 12 GB GPU memory)
+
       - p4d.24xlarge (A100 - 8 x 40 GB GPU memory)
       - p4de.24xlarge (A100 - 8 x 40 GB GPU memory)
 
