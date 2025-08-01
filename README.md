@@ -21,7 +21,7 @@ This repo provides a [AWS CloudFormation](https://aws.amazon.com/cloudformation/
 Template provides the following features
 
 - NVIDIA GPU EC2 instance
-  - x86_64: [G4dn](https://aws.amazon.com/ec2/instance-types/g4/#Product_Details), [G5](https://aws.amazon.com/ec2/instance-types/g5/), [G6, Gr6, G6e, G6f, Gr6f](https://aws.amazon.com/ec2/instance-types/g6/#Product_details), [G6e](https://aws.amazon.com/ec2/instance-types/g6e/), [P4d](https://aws.amazon.com/ec2/instance-types/p4/#Product_details), [P4de](https://aws.amazon.com/ec2/instance-types/p4/#Product_details), [P5](https://aws.amazon.com/ec2/instance-types/p5/#Product_details), [P5e](https://aws.amazon.com/ec2/instance-types/p5/#Product_details), [P5en](https://aws.amazon.com/ec2/instance-types/p5/#Product_details), [P6](https://aws.amazon.com/ec2/instance-types/p6/)
+  - x86_64: [G4dn](https://aws.amazon.com/ec2/instance-types/g4/), [G5](https://aws.amazon.com/ec2/instance-types/g5/), [G6, G6f, Gr6, Gr6f](https://aws.amazon.com/ec2/instance-types/g6/), [G6e](https://aws.amazon.com/ec2/instance-types/g6e/), [P4d, P4de](https://aws.amazon.com/ec2/instance-types/p4/#Product_details), [P5, P5e, P5en](https://aws.amazon.com/ec2/instance-types/p5/#Product_details), [P6](https://aws.amazon.com/ec2/instance-types/p6/)
   - arm64: [G5g](https://aws.amazon.com/ec2/instance-types/g5g/)
 - [Generative AI](https://aws.amazon.com/ai/generative-ai/) applications
   - [Ollama](https://ollama.com/) for running and managing LLMs
