@@ -265,9 +265,6 @@ Parameters:
       - g6.24xlarge (L4 - 4 x 24 GB GPU memory)
       - g6.48xlarge (L4 - 8 x 24 GB GPU memory)
 
-      - gr6.4xlarge (L4 - 24 GB GPU memory)
-      - gr6.8xlarge (L4 - 24 GB GPU memory)
-
       - g6e.xlarge (L40S - 48 GB GPU memory)
       - g6e.2xlarge (L40S - 48 GB GPU memory)
       - g6e.4xlarge (L40S - 48 GB GPU memory)
@@ -281,7 +278,10 @@ Parameters:
       - g6f.xlarge (L4 - 3 GB GPU memory)
       - g6f.2xlarge (L4 - 6 GB GPU memory)
       - g6f.4xlarge (L4 - 12 GB GPU memory)
-      - gr6f.4xlarge L4 - 12 GB GPU memory)
+
+      - gr6.4xlarge (L4 - 24 GB GPU memory)
+      - gr6.8xlarge (L4 - 24 GB GPU memory)
+      - gr6f.4xlarge (L4 - 12 GB GPU memory)
 
       - p4d.24xlarge (A100 - 8 x 40 GB GPU memory)
       - p4de.24xlarge (A100 - 8 x 40 GB GPU memory)
@@ -2108,7 +2108,19 @@ Resources:
                 cd /tmp/gpu
                 apt-get install -q -y amazon-ec2-utils
 
-                if ( ec2-metadata -t | grep -q 6f\. ); then  // g6f and gr6f only support NVIDIA GRID driver
+                # NVIDIA repo
+                DISTRO=$(. /etc/os-release;echo $ID$VERSION_ID | sed -e 's/\.//g')
+                if (arch | grep -q x86); then
+                  ARCH=x86_64
+                else
+                  ARCH=sbsa
+                fi
+                curl -s -L -O https://developer.download.nvidia.com/compute/cuda/repos/$DISTRO/$ARCH/cuda-keyring_1.1-1_all.deb
+                apt-get install -q -y ./cuda-keyring_1.1-1_all.deb
+                apt-get update -q
+
+                # g6f and gr6f only support NVIDIA GRID driver
+                if ( ec2-metadata -t | grep -q 6f\. ); then
                   aws s3 cp --recursive s3://ec2-linux-nvidia-drivers/latest/ . --no-sign-request
                   chmod +x NVIDIA-Linux-x86_64*.run
                   if (lsb_release -r -s | grep -q 22); then
@@ -2121,22 +2133,13 @@ Resources:
                     ./NVIDIA-Linux-x86_64*.run -s
                   fi
                 else
-                  DISTRO=$(. /etc/os-release;echo $ID$VERSION_ID | sed -e 's/\.//g')
-                  if (arch | grep -q x86); then
-                    ARCH=x86_64
-                  else
-                    ARCH=sbsa
-                  fi
-                  curl -s -L -O https://developer.download.nvidia.com/compute/cuda/repos/$DISTRO/$ARCH/cuda-keyring_1.1-1_all.deb
-                  apt-get install -q -y ./cuda-keyring_1.1-1_all.deb
-                  apt-get update -q
-
                   apt-get install -q -y nvidia-open
                   apt-get install -q -y nvidia-settings
+                  apt-get install -q -y nvidia-xconfig
                 fi
 
                 # NVIDIA Container Toolkit: https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html
-                if (! apt-get search nvidia | grep -q nvidia-container-toolkit); then
+                if (! apt-cache search nvidia | grep -q nvidia-container-toolkit); then
                   cd /tmp
                   curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | sudo gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg \
                     && curl -s -L https://nvidia.github.io/libnvidia-container/stable/deb/nvidia-container-toolkit.list | \
@@ -2170,31 +2173,26 @@ Resources:
               content: |
                 # https://docs.openwebui.com/tutorials/https-nginx/
                 server {                      
-                        # HTTP
-                        listen 80 default_server;
-                        listen [::]:80 default_server;
-
-                        # HTTPS
-                        listen 443 ssl default_server;
-                        listen [::]:443 ssl default_server;
-                        include snippets/snakeoil.conf;
-
-                        location / {
-                            proxy_pass http://localhost:8080;
-
-                            # Add WebSocket support (Necessary for version 0.5.0 and up)
-                            proxy_http_version 1.1;
-                            proxy_set_header Upgrade $http_upgrade;
-                            proxy_set_header Connection "upgrade";
-
-                            proxy_set_header Host $host;
-                            proxy_set_header X-Real-IP $remote_addr;
-                            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-                            proxy_set_header X-Forwarded-Proto $scheme;
-
-                            # (Optional) Disable proxy buffering for better streaming response from models
-                            proxy_buffering off;
-                        }
+                  # HTTP
+                  listen 80 default_server;
+                  listen [::]:80 default_server;
+                  # HTTPS
+                  listen 443 ssl default_server;
+                  listen [::]:443 ssl default_server;
+                  include snippets/snakeoil.conf;
+                  location / {
+                      proxy_pass http://localhost:8080;
+                      # Add WebSocket support (Necessary for version 0.5.0 and up)
+                      proxy_http_version 1.1;
+                      proxy_set_header Upgrade $http_upgrade;
+                      proxy_set_header Connection "upgrade";
+                      proxy_set_header Host $host;
+                      proxy_set_header X-Real-IP $remote_addr;
+                      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                      proxy_set_header X-Forwarded-Proto $scheme;
+                      # (Optional) Disable proxy buffering for better streaming response from models
+                      proxy_buffering off;
+                  }
                 }
               mode: "000644"
               owner: "root"
