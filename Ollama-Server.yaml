@@ -286,6 +286,7 @@ Parameters:
       - p4d.24xlarge (A100 - 8 x 40 GB GPU memory)
       - p4de.24xlarge (A100 - 8 x 40 GB GPU memory)
 
+      - p5.4xlarge (H100 - 80 GB GPU memory)
       - p5.48xlarge (H100 - 8 x 80 GB GPU memory)
       - p5e.48xlarge (H200 - 8 x 141 GB GPU memory)
       - p5en.48xlarge (H200 - 8 x 141 GB GPU memory)
@@ -297,6 +298,8 @@ Parameters:
       - g5g.8xlarge ARM64 ( T4G - 16 GB GPU memory)
       - g5g.16xlarge ARM64 ( T4G - 2 x 16 GB GPU memory)
       - g5g.metal ARM64 ( T4G - 2 x 16 GB GPU memory)
+
+      - p6e-gb200.36xlarge ARM64 (B200 - 4 x 180 GB GPU memory)
 
     Default: g4dn.xlarge (T4 - 16 GB GPU memory)
   ec2TerminationProtection:
@@ -2119,6 +2122,7 @@ Resources:
                 apt-get install -q -y ./cuda-keyring_1.1-1_all.deb
                 apt-get update -q
 
+                # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/install-nvidia-driver.html#nvidia-driver-instance-type
                 # g6f and gr6f only support NVIDIA GRID driver
                 if ( ec2-metadata -t | grep -q 6f\. ); then
                   aws s3 cp --recursive s3://ec2-linux-nvidia-drivers/latest/ . --no-sign-request
