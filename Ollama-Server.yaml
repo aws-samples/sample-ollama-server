@@ -1256,7 +1256,7 @@ Resources:
                       route53:ChangeResourceRecordSetsNormalizedRecordNames:
                         [_acme-challenge.*]
           - !Ref AWS::NoValue
-        - PolicyName: ListBedrockModelsAccess
+        - PolicyName: BedrockAccess
           PolicyDocument:
             Version: "2012-10-17"
             Statement:
@@ -1264,7 +1264,12 @@ Resources:
                 Action:
                   - bedrock:ListFoundationModels
                   - bedrock:ListInferenceProfiles
+                  - bedrock:InvokeModel
+                  - bedrock:InvokeModelWithResponseStream
                 Resource: "*"
+                Condition:
+                  IpAddress:
+                    aws:SourceIp: 0.0.0.0/0
       ManagedPolicyArns:
         - !Sub "arn:${AWS::Partition}:iam::aws:policy/AmazonSSMManagedInstanceCore"
         - !Sub "arn:${AWS::Partition}:iam::aws:policy/CloudWatchAgentServerPolicy"
@@ -1501,56 +1506,6 @@ Resources:
                 ]
         - Key: GitHub
           Value: https://github.com/aws-samples/sample-ollama-server
-
-  iamBedrockUser:
-    Type: AWS::IAM::User
-    Properties:
-      Tags:
-        - Key: StackName
-          Value: !Ref AWS::StackName
-        - Key: StackId
-          Value: !Ref AWS::StackId
-        - Key: GitHub
-          Value: https://github.com/aws-samples/nextcloud-server
-
-  iamBedrockGroup:
-    Type: AWS::IAM::Group
-    Properties:
-
-  iamBedrockGroupPolicy:
-    Type: AWS::IAM::GroupPolicy
-    Properties:
-      GroupName: !Ref iamBedrockGroup
-      PolicyName: !Sub
-        - "${AWS::StackName}-iamBedrockGroupPolicy-${UID}"
-        - UID:
-            !Select [
-              3,
-              !Split ["-", !Select [2, !Split ["/", !Ref AWS::StackId]]],
-            ]
-      PolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Action:
-              - bedrock:InvokeModel
-              - bedrock:InvokeModelWithResponseStream
-            Resource: "*"
-            Condition:
-              IpAddress:
-                aws:SourceIp: 0.0.0.0/0
-
-  iamBedrockUserToGroup:
-    Type: AWS::IAM::UserToGroupAddition
-    Properties:
-      GroupName: !Ref iamBedrockGroup
-      Users:
-        - !Ref iamBedrockUser
-
-  bedrockUserAccessKey:
-    Type: AWS::IAM::AccessKey
-    Properties:
-      UserName: !Ref iamBedrockUser
 
   ec2Instance:
     Type: AWS::EC2::Instance
@@ -2213,10 +2168,6 @@ Resources:
                       - /opt/docker/bedrock-models.yaml:/app/config.yaml:ro
                     network_mode: "host"
                     restart: always
-                    environment:
-                      AWS_REGION_NAME: aws_region_code
-                      AWS_ACCESS_KEY_ID: ${bedrockUserAccessKey}
-                      AWS_SECRET_ACCESS_KEY: ${bedrockUserAccessKey.SecretAccessKey}
 
                   litellm-image:
                     container_name: litellm-image
@@ -2229,8 +2180,6 @@ Resources:
                     restart: always
                     environment:
                       AWS_REGION_NAME: us-west-2
-                      AWS_ACCESS_KEY_ID: ${bedrockUserAccessKey}
-                      AWS_SECRET_ACCESS_KEY: ${bedrockUserAccessKey.SecretAccessKey}
 
                   open-webui:
                     container_name: open-webui
