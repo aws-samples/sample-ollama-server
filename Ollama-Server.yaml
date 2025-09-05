@@ -64,7 +64,7 @@ Metadata:
           - albIpAddressType
           - albLogging
       - Label:
-          default: ALB HTTPS listener
+          default: ALB HTTPS Listener
         Parameters:
           - albCertificateArn
           - albSecurityPolicy
@@ -111,7 +111,7 @@ Metadata:
       vpcID:
         default: "VPC with outbound internet connectivity"
       subnetID:
-        default: "Subnet with outbound internet connectivity"
+        default: "Subnet in selected VPC with outbound internet connectivity"
       displayPublicIP:
         default: "EC2 in public subnet with public IP assigned?"
       assignStaticIP:
@@ -120,7 +120,7 @@ Metadata:
       enableALB:
         default: "Deploy Application Load Balancer (ALB)"
       albSubnets:
-        default: "Subnets for ALB. Select at least 2 in EC2 VPC. **Select a subnet even if not using ALB**"
+        default: "At least 2 subnets in EC2 VPC. **Select a subnet even if not deploying ALB**"
       albScheme:
         default: "Load balancer scheme (internal or internet facing)"
       albIpAddressType:
@@ -449,7 +449,7 @@ Parameters:
     Default: 100
   volumeType:
     Type: String
-    Description: https://docs.aws.amazon.com/ebs/latest/userguide/ebs-volume-types.html
+    Description: https://aws.amazon.com/ebs/general-purpose/
     AllowedValues:
       - gp3
       - gp2
@@ -830,14 +830,14 @@ Parameters:
 
   enableCloudFront:
     Type: String
-    Description: https://docs.aws.amazon.com/cloudfront/
+    Description: Requires IPv4 origin. https://aws.amazon.com/cloudfront/
     AllowedValues:
       - "Yes"
       - "No"
     Default: "No"
   originType:
     Type: String
-    Description: https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/private-content-vpc-origins.html
+    Description: Enable Elastic IP if using EC2 custom origin
     AllowedValues:
       - "Custom Origin"
       - "VPC Origin"
@@ -1477,7 +1477,7 @@ Resources:
     Type: AWS::EC2::SecurityGroup
     Condition: createSgCloudFront
     Properties:
-      GroupDescription: Allow inbound HTTP from CloudFront
+      GroupDescription: Allow inbound HTTP from CloudFront (IPv4)
       VpcId: !Ref vpcID
       SecurityGroupIngress:
         - Description: HTTP (CloudFront origin IP)
@@ -1513,7 +1513,7 @@ Resources:
     Type: AWS::EC2::SecurityGroup
     Condition: createSgCloudFront
     Properties:
-      GroupDescription: Allow inbound HTTPS from CloudFront
+      GroupDescription: Allow inbound HTTP from CloudFront (IPv6)
       VpcId: !Ref vpcID
       SecurityGroupIngress:
         - Description: HTTPS (CloudFront origin IP)
@@ -2587,22 +2587,12 @@ Resources:
             CidrIpv6: ::/0
           - !Ref AWS::NoValue
       SecurityGroupEgress:
-        - !If
-          - albAllowIPv4
-          - Description: Allow all outbound traffic (IPv4)
-            IpProtocol: tcp
-            FromPort: 0
-            ToPort: 65535
-            CidrIp: 0.0.0.0/0
-          - !Ref AWS::NoValue
-        - !If
-          - albAllowIPv6
-          - Description: Allow all outbound traffic (IPv6)
-            IpProtocol: tcp
-            FromPort: 0
-            ToPort: 65535
-            CidrIpv6: ::/0
-          - !Ref AWS::NoValue
+        - Description: Allow all outbound traffic (IPv4)
+          IpProtocol: -1
+          CidrIp: 0.0.0.0/0
+        - Description: Allow all outbound traffic (IPv6)
+          IpProtocol: -1
+          CidrIpv6: ::/0
       Tags:
         - Key: StackName
           Value: !Ref AWS::StackName
@@ -2855,7 +2845,8 @@ Resources:
                   !GetAtt alb.DNSName,
                   !GetAtt ec2Instance.PrivateDnsName,
                 ]
-              Id: !Ref ec2Instance
+              Id:
+                !If [createALB, !GetAtt alb.LoadBalancerName, !Ref ec2Instance]
               VpcOriginConfig:
                 VpcOriginId: !GetAtt cfVpcOrigin.Id
             - DomainName:
@@ -2864,7 +2855,8 @@ Resources:
                   !GetAtt alb.DNSName,
                   !GetAtt ec2Instance.PublicDnsName,
                 ]
-              Id: !Ref ec2Instance
+              Id:
+                !If [createALB, !GetAtt alb.LoadBalancerName, !Ref ec2Instance]
               CustomOriginConfig:
                 OriginProtocolPolicy:
                   !If [createHttpRedirectListener, https-only, http-only]
@@ -2914,7 +2906,8 @@ Resources:
                   !GetAtt alb.DNSName,
                   !GetAtt ec2Instance.PrivateDnsName,
                 ]
-              Id: !Ref ec2Instance
+              Id:
+                !If [createALB, !GetAtt alb.LoadBalancerName, !Ref ec2Instance]
               VpcOriginConfig:
                 VpcOriginId: !GetAtt cfVpcOrigin.Id
             - DomainName:
@@ -2923,7 +2916,8 @@ Resources:
                   !GetAtt alb.DNSName,
                   !GetAtt ec2Instance.PublicDnsName,
                 ]
-              Id: !Ref ec2Instance
+              Id:
+                !If [createALB, !GetAtt alb.LoadBalancerName, !Ref ec2Instance]
               CustomOriginConfig:
                 OriginProtocolPolicy:
                   !If [createHttpRedirectListener, https-only, http-only]
@@ -2944,7 +2938,8 @@ Resources:
           CachePolicyId: "4cc15a8a-d715-48a4-82b8-cc0b614638fe"
           OriginRequestPolicyId: "216adef6-5c7f-47e4-b989-5492eafa07d3"
           ResponseHeadersPolicyId: "67f7725c-6f97-4210-82d7-5512b31e9d03"
-          TargetOriginId: !Ref ec2Instance
+          TargetOriginId:
+            !If [createALB, !GetAtt alb.LoadBalancerName, !Ref ec2Instance]
           ViewerProtocolPolicy: "redirect-to-https"
         Logging:
           Bucket: !GetAtt cfLoggingBucket.DomainName
