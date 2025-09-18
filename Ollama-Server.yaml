@@ -2119,7 +2119,8 @@ Resources:
                 # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/install-nvidia-driver.html#nvidia-driver-instance-type
                 # g6f and gr6f only support NVIDIA GRID driver
                 if ( ec2-metadata -t | grep -q 6f\. ); then
-                  aws s3 cp --recursive s3://ec2-linux-nvidia-drivers/latest/ . --no-sign-request
+                  # aws s3 cp --recursive s3://ec2-linux-nvidia-drivers/latest/ . --no-sign-request
+                  aws s3 cp s3://ec2-linux-nvidia-drivers/grid-18.4/NVIDIA-Linux-x86_64-570.172.08-grid-aws.run . --no-sign-request
                   chmod +x NVIDIA-Linux-x86_64*.run
                   if (lsb_release -r -s | grep -q 22); then
                     CC=/usr/bin/gcc-12 ./NVIDIA-Linux-x86_64*.run -s
