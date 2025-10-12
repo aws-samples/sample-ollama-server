@@ -2132,8 +2132,7 @@ Resources:
                 # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/install-nvidia-driver.html#nvidia-driver-instance-type
                 # g6f and gr6f only support NVIDIA GRID driver
                 if ( ec2-metadata -t | grep -q 6f\. ); then
-                  # aws s3 cp --recursive s3://ec2-linux-nvidia-drivers/latest/ . --no-sign-request
-                  aws s3 cp s3://ec2-linux-nvidia-drivers/grid-18.4/NVIDIA-Linux-x86_64-570.172.08-grid-aws.run . --no-sign-request
+                  aws s3 cp --recursive s3://ec2-linux-nvidia-drivers/latest/ . --no-sign-request
                   chmod +x NVIDIA-Linux-x86_64*.run
                   if (lsb_release -r -s | grep -q 22); then
                     CC=/usr/bin/gcc-12 ./NVIDIA-Linux-x86_64*.run -s
@@ -2145,9 +2144,11 @@ Resources:
                     ./NVIDIA-Linux-x86_64*.run -s
                   fi
                 else
-                  apt-get install -q -y nvidia-open
+                  # Ubuntu pre-compiled NVIDIA modules : https://ubuntu.com/server/docs/nvidia-drivers-installation
+                  VERSION=$(apt-cache search "nvidia-driver" | grep "^nvidia-driver-.*-server-open" | cut -d"-" -f3 | sort -r | head -1)
+                  apt-get install -q -y linux-modules-nvidia-$VERSION-server-open-aws nvidia-headless-no-dkms-$VERSION-server-open nvidia-driver-$VERSION-server-open nvidia-utils-$VERSION-server
                   apt-get install -q -y nvidia-settings
-                  apt-get install -q -y nvidia-xconfig
+                  rm /etc/X11/xorg.conf
                 fi
 
                 # NVIDIA Container Toolkit: https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html
