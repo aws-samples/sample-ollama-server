@@ -2614,7 +2614,7 @@ Resources:
         - Key: StackId
           Value: !Ref AWS::StackId
         - Key: GitHub
-          Value: https://github.com/aws-samples/sample-ollama-serverx
+          Value: https://github.com/aws-samples/sample-ollama-server
 
   cfDistribution:
     Type: AWS::CloudFront::Distribution
@@ -2821,6 +2821,10 @@ Outputs:
     Description: EC2 Serial Console
     Value: !Sub "https://${AWS::Region}.console.aws.amazon.com/ec2-instance-connect/ssh?connType=serial&instanceId=${ec2Instance}&serialPort=0#/"
 
+  EC2InstanceID:
+    Description: EC2 Instance ID
+    Value: !Ref ec2Instance
+
   SSMsessionManager:
     Description: SSM Session Manager ("sudo passwd ubuntu" to change password)
     Value: !Sub
@@ -2837,7 +2841,7 @@ Outputs:
     Condition: installDCV
     Description: DCV web browser client (login as ubuntu)
     Value: !Sub
-      - "https://${IpAddress}:8443          ( dcv://${IpAddress}:8443 )"
+      - "https://${IpAddress}:8443/?username=ubuntu   ( dcv://ubuntu:@${IpAddress}:8443 )"
       - IpAddress:
           !If [
             displayPublicIP,
