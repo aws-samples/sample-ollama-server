@@ -1894,6 +1894,14 @@ Resources:
                   apt-get install -q -y python3-certbot python3-certbot-apache python3-certbot-nginx python3-certbot-dns-route53
                 fi
 
+                # Ubuntu 24.04: reduce systemd-networkd-wait-online.service 2+ min timeout
+                if (lsb_release -r -s | grep -q 24); then
+                  sed -i "s/systemd-networkd-wait-online$/& --timeout=3/g" /usr/lib/systemd/system/systemd-networkd-wait-online.service
+                else
+                  rm -f /etc/systemd/system/systemd-networkd-wait-online.service.d/override.conf
+                fi
+                systemctl daemon-reload
+
                 rm -f ${!0}
               mode: "000740"
               owner: "root"
@@ -2152,6 +2160,24 @@ Resources:
                   apt-get install -q -y linux-modules-nvidia-$VERSION-server-open-aws nvidia-headless-no-dkms-$VERSION-server-open nvidia-driver-$VERSION-server-open nvidia-utils-$VERSION-server
                   apt-get install -q -y nvidia-settings
                   rm /etc/X11/xorg.conf
+
+                  # P instance: https://documentation.ubuntu.com/server/how-to/graphics/install-nvidia-drivers/#optional-installing-fabric-manager-and-the-nscq-library
+                  # https://repost.aws/articles/ARWGxLArMBQ4y1MKoSHTq3gQ/
+                  if ( ec2-metadata -t | grep -q " p[0-9]" ); then
+                    apt-get install -q -y nvidia-fabricmanager-$VERSION libnvidia-nscq-$VERSION
+                    apt-get install -q -y nvidia-imex-$VERSION
+                    if ( ec2-metadata -t | grep -q " p6" ); then
+                      if ( arch | grep -q x86_64 ); then
+                        DISTRO=$(. /etc/os-release;echo $ID$VERSION_ID | sed -e 's/\.//g')
+                        wget https://developer.download.nvidia.com/compute/cuda/repos/$DISTRO/x86_64/nvlsm_2025.06.10-1_amd64.deb
+                        apt-get install -q -y ./nvlsm*.deb
+                        apt-get install -q -y infiniband-diags
+                        echo "ib_umad" | tee -a /etc/modules-load.d/modules.conf
+                        modprobe ib_umad
+                      fi
+                    fi
+                    systemctl enable --now nvidia-fabricmanager
+                  fi
                 fi
 
                 # NVIDIA Container Toolkit: https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html
