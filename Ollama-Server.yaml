@@ -2127,7 +2127,6 @@ Resources:
                     ./NVIDIA-Linux-x86_64*.run -s
                   fi
 
-                  touch /etc/modprobe.d/nvidia.conf
                   echo "options nvidia NVreg_EnableGpuFirmware=0" | tee --append /etc/modprobe.d/nvidia.conf
                 else
                   # Ubuntu pre-compiled modules: https://repost.aws/articles/ARWGxLArMBQ4y1MKoSHTq3gQ
@@ -2139,7 +2138,7 @@ Resources:
                   if ( ec2-metadata -t | grep -q " p[0-9]" ); then
                     apt-get install -q -y nvidia-fabricmanager-$VERSION libnvidia-nscq-$VERSION
                     apt-get install -q -y nvidia-imex-$VERSION
-                    if ( ec2-metadata -t | grep -q " p6" ); then
+                    if ( ec2-metadata -t | grep -q " p[6-9]" ); then
                       apt-get install -q -y nvlsm
                       apt-get install -q -y infiniband-diags
                       echo "ib_umad" | tee -a /etc/modules-load.d/modules.conf
@@ -2149,15 +2148,7 @@ Resources:
                   fi
                 fi
 
-                # NVIDIA Container Toolkit: https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html
-                if (! apt-cache search nvidia | grep -q nvidia-container-toolkit); then
-                  cd /tmp
-                  curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | sudo gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg \
-                    && curl -s -L https://nvidia.github.io/libnvidia-container/stable/deb/nvidia-container-toolkit.list | \
-                    sed 's#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g' | \
-                    sudo tee /etc/apt/sources.list.d/nvidia-container-toolkit.list
-                  apt-get update
-                fi
+                # NVIDIA Container Toolkit
                 apt-get install -q -y nvidia-container-toolkit
                 nvidia-ctk runtime configure --runtime=docker
                 systemctl restart docker
