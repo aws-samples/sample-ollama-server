@@ -2827,6 +2827,7 @@ Resources:
   cfDistribution:
     Type: AWS::CloudFront::Distribution
     Condition: noCloudFrontLogging
+    DependsOn: ec2Instance
     Metadata:
       cfn_nag:
         rules_to_suppress:
@@ -2890,6 +2891,7 @@ Resources:
   cfDistributionWithLogging:
     Type: AWS::CloudFront::Distribution
     Condition: enableCloudFrontLogging
+    DependsOn: ec2Instance
     Metadata:
       cfn_nag:
         rules_to_suppress:
