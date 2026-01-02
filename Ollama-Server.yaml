@@ -849,7 +849,7 @@ Parameters:
     AllowedValues:
       - "Yes"
       - "No"
-    Default: "No"
+    Default: "Yes"
   originType:
     Type: String
     Description: Enable Elastic IP if using EC2 custom origin
@@ -1341,7 +1341,7 @@ Resources:
       Roles:
         - !Ref instanceIamRole
 
-  securityGroup:
+  sgEC2Instance:
     Type: AWS::EC2::SecurityGroup
     Metadata:
       cfn_nag:
@@ -1488,7 +1488,7 @@ Resources:
         - Key: GitHub
           Value: https://github.com/aws-samples/sample-ollama-server
 
-  securityGroupForCloudFrontHTTP:
+  sgCloudFrontIPv4:
     Type: AWS::EC2::SecurityGroup
     Condition: createSgCloudFront
     Properties:
@@ -1524,7 +1524,7 @@ Resources:
         - Key: GitHub
           Value: https://github.com/aws-samples/sample-ollama-server
 
-  securityGroupForCloudFrontIpv6HTTP:
+  sgCloudFrontIPv6:
     Type: AWS::EC2::SecurityGroup
     Condition: createSgCloudFront
     Properties:
@@ -2346,17 +2346,9 @@ Resources:
       DisableApiTermination: !If [enableProtection, true, false]
       EbsOptimized: true
       SecurityGroupIds:
-        - !Ref securityGroup
-        - !If [
-            createSgCloudFront,
-            !Ref securityGroupForCloudFrontHTTP,
-            !Ref AWS::NoValue,
-          ]
-        - !If [
-            createSgCloudFront,
-            !Ref securityGroupForCloudFrontIpv6HTTP,
-            !Ref AWS::NoValue,
-          ]
+        - !Ref sgEC2Instance
+        - !If [createSgCloudFront, !Ref sgCloudFrontIPv4, !Ref AWS::NoValue]
+        - !If [createSgCloudFront, !Ref sgCloudFrontIPv6, !Ref AWS::NoValue]
       BlockDeviceMappings:
         - DeviceName: /dev/sda1
           Ebs:
@@ -2484,6 +2476,25 @@ Resources:
             Path: "/#{path}"
             Query: "#{query}"
             StatusCode: "HTTP_301"
+
+  albHttpListenerRule:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    Condition: createHttpRedirectListener
+    Properties:
+      ListenerArn: !Ref albHttpRedirectListener
+      Priority: 10
+      Actions:
+        - Type: forward
+          TargetGroupArn: !Ref albTargetGroup
+      Conditions:
+        - Field: http-header
+          HttpHeaderConfig:
+            HttpHeaderName: X-Amz-Cf-Id
+            RegexValues: [".+"]
+        - Field: http-header
+          HttpHeaderConfig:
+            HttpHeaderName: Via
+            RegexValues: [".+"]
 
   albHttpsListener:
     Type: AWS::ElasticLoadBalancingV2::Listener
@@ -2668,16 +2679,8 @@ Resources:
       Scheme: !Ref albScheme
       SecurityGroups:
         - !Ref albSecurityGroup
-        - !If [
-            createSgCloudFront,
-            !Ref securityGroupForCloudFrontHTTP,
-            !Ref AWS::NoValue,
-          ]
-        - !If [
-            createSgCloudFront,
-            !Ref securityGroupForCloudFrontIpv6HTTP,
-            !Ref AWS::NoValue,
-          ]
+        - !If [createSgCloudFront, !Ref sgCloudFrontIPv4, !Ref AWS::NoValue]
+        - !If [createSgCloudFront, !Ref sgCloudFrontIPv6, !Ref AWS::NoValue]
       Subnets: !Ref albSubnets
       LoadBalancerAttributes:
         - Key: access_logs.s3.enabled
@@ -2859,8 +2862,7 @@ Resources:
               Id:
                 !If [createALB, !GetAtt alb.LoadBalancerName, !Ref ec2Instance]
               CustomOriginConfig:
-                OriginProtocolPolicy:
-                  !If [createHttpRedirectListener, https-only, http-only]
+                OriginProtocolPolicy: http-only
                 OriginSSLProtocols:
                   - TLSv1.2
         Enabled: true
@@ -2868,7 +2870,7 @@ Resources:
         HttpVersion: http2and3
         ViewerCertificate:
           CloudFrontDefaultCertificate: true
-          MinimumProtocolVersion: TLSv1.2_2021
+          MinimumProtocolVersion: TLSv1.2_2025
         DefaultCacheBehavior:
           AllowedMethods: !Split [",", "GET,HEAD,OPTIONS,PUT,PATCH,POST,DELETE"]
           CachedMethods:
@@ -2921,8 +2923,7 @@ Resources:
               Id:
                 !If [createALB, !GetAtt alb.LoadBalancerName, !Ref ec2Instance]
               CustomOriginConfig:
-                OriginProtocolPolicy:
-                  !If [createHttpRedirectListener, https-only, http-only]
+                OriginProtocolPolicy: http-only
                 OriginSSLProtocols:
                   - TLSv1.2
         Enabled: true
@@ -2930,7 +2931,7 @@ Resources:
         HttpVersion: http2and3
         ViewerCertificate:
           CloudFrontDefaultCertificate: true
-          MinimumProtocolVersion: TLSv1.2_2021
+          MinimumProtocolVersion: TLSv1.2_2025
         DefaultCacheBehavior:
           AllowedMethods: !Split [",", "GET,HEAD,OPTIONS,PUT,PATCH,POST,DELETE"]
           CachedMethods:
@@ -3047,9 +3048,9 @@ Outputs:
             DefaultValue: "console.aws.amazon.com",
           ]
 
-  DCVwebConsole:
+  DcvURL:
     Condition: installDCV
-    Description: DCV web browser client (login as ubuntu)
+    Description: DCV URL (login as ubuntu)
     Value: !Sub
       - "https://${IpAddress}:8443/?username=ubuntu   ( dcv://ubuntu:@${IpAddress}:8443 )"
       - IpAddress:

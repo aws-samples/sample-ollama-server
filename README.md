@@ -12,22 +12,23 @@ This repo provides a [AWS CloudFormation](https://aws.amazon.com/cloudformation/
 
 <https://github.com/user-attachments/assets/29cb20f0-5900-49d9-92e4-6c06c97bf0f3>
 
-## Architecture Diagram
+# Architecture Diagram
 
 <img alt="architecture" src="images/ollama-server.png">
 
-## Overview of Features
+# Overview of Features
 
 Template provides the following features
 
 - NVIDIA GPU EC2 instance
-  - x86_64: [G4dn](https://aws.amazon.com/ec2/instance-types/g4/), [G5](https://aws.amazon.com/ec2/instance-types/g5/), [G6, G6f, Gr6, Gr6f](https://aws.amazon.com/ec2/instance-types/g6/), [G6e](https://aws.amazon.com/ec2/instance-types/g6e/), [P4d, P4de](https://aws.amazon.com/ec2/instance-types/p4/#Product_details), [P5, P5e, P5en](https://aws.amazon.com/ec2/instance-types/p5/#Product_details), [P6](https://aws.amazon.com/ec2/instance-types/p6/)
+  - x86_64: [G4dn](https://aws.amazon.com/ec2/instance-types/g4/#Product_Details), [G5](https://aws.amazon.com/ec2/instance-types/g5/), [G6](https://aws.amazon.com/ec2/instance-types/g6/#Product_details), [Gr6](https://aws.amazon.com/ec2/instance-types/g6/#Product_details), [G6e](https://aws.amazon.com/ec2/instance-types/g6e/), [P4d](https://aws.amazon.com/ec2/instance-types/p4/#Product_details), [P4de](https://aws.amazon.com/ec2/instance-types/p4/#Product_details), [P5](https://aws.amazon.com/ec2/instance-types/p5/#Product_details), [P5e](https://aws.amazon.com/ec2/instance-types/p5/#Product_details), [P5en](https://aws.amazon.com/ec2/instance-types/p5/#Product_details), [P6](https://aws.amazon.com/ec2/instance-types/p6/)
   - arm64: [G5g](https://aws.amazon.com/ec2/instance-types/g5g/)
 - [Generative AI](https://aws.amazon.com/ai/generative-ai/) applications
   - [Ollama](https://ollama.com/) for running and managing LLMs
   - [Open WebUI](https://openwebui.com/) web interface for interacting with [local Ollama](https://ollama.com/library) and [remote Bedrock](https://docs.aws.amazon.com/bedrock/latest/userguide/models-supported.html) models
     - [Amazon Bedrock](https://aws.amazon.com/bedrock/) model access through [LiteLLM proxy server](https://www.litellm.ai/)
-    - [Image generation](https://docs.openwebui.com/tutorials/images/#using-image-generation) with [Stable Diffusion 3.5 Large](https://aws.amazon.com/blogs/aws/stable-diffusion-3-5-large-is-now-available-in-amazon-bedrock/) or [Amazon Nova Canvas](https://aws.amazon.com/blogs/machine-learning/exploring-creative-possibilities-a-visual-guide-to-amazon-nova-canvas/)
+    - [Image generation](https://docs.openwebui.com/tutorials/images/#using-image-generation) with [Stable Diffusion 3.5 Large](https://aws.amazon.com/blogs/aws/stable-diffusion-3-5-large-is-now-available-in-amazon-bedrock/) or [Amazon Nova Canvas](https://aws.amazon.com/blogs/machine-learning/exploring-creative-possibilities-a-visual-guide-to-amazon-nova-canvas/) model (experimental)
+- Remote Administration
   - [Amazon DCV](https://aws.amazon.com/hpc/dcv/) remote display protocol server for graphical desktop access (optional)
   - [SSM Session Manager](https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager.html)  secure shell access
   - [EC2 Instance Connect](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/connect-linux-inst-eic.html) in-browser SSH access
@@ -41,10 +42,10 @@ Template provides the following features
 
 ## Notice
 
-Although this repository is released under the [MIT-0](LICENSE) license, its CloudFormation template uses third party components which are released under the following respective licenses 
+Although this repository is released under the [MIT-0](LICENSE) license, its CloudFormation template uses third party components which are released under the following respective licenses
 
 - [Ollama](https://github.com/ollama/ollama): [MIT](https://github.com/ollama/ollama/blob/main/LICENSE) license
-- [Open WebUI](https://github.com/open-webui/open-webui): [BSD-3](https://github.com/open-webui/open-webui/blob/main/LICENSE) based license. More information at [Open WebUI License](https://docs.openwebui.com/license/)
+- [Open WebUI](https://github.com/open-webui/open-webui): [BSD-3-Clause](https://github.com/open-webui/open-webui/blob/main/LICENSE) license
 - [LiteLLM](https://github.com/BerriAI/litellm):  [MIT](https://github.com/BerriAI/litellm/blob/main/LICENSE) license
 
 Usage of [Amazon DCV](https://aws.amazon.com/hpc/dcv/) indicates acceptance of [DCV EULA](https://www.amazondcv.com/eula.html).
@@ -54,14 +55,13 @@ By using the template, you accept license agreement of all software that is inst
 
 - EC2 instance must be provisioned in a subnet with outbound IPv4 internet connectivity
 - Verify instance type [Region](https://docs.aws.amazon.com/ec2/latest/instancetypes/ec2-instance-regions.html) and [AZ](https://repost.aws/knowledge-center/ec2-instance-type-not-supported-az-error) availability
+- Check the [On-Demand Instance quota](https://docs.aws.amazon.com/ec2/latest/instancetypes/ec2-instance-quotas.html#on-demand-instance-quotas) (`Running On-Demand G and VT instances` or `Running On-Demand P instances`) value of your desired instance type and request quota increase where necessary
 - To use [Application Load Balancer (ALB)](https://aws.amazon.com/elasticloadbalancing/application-load-balancer/) with HTTPS, either [request a public certificate](https://docs.aws.amazon.com/acm/latest/userguide/acm-public-certificates.html) or [import a certificate](https://docs.aws.amazon.com/acm/latest/userguide/import-certificate.html) into [AWS Certificate Manager](https://aws.amazon.com/certificate-manager/)
-- To use [Amazon CloudFront](https://aws.amazon.com/cloudfront/) with EC2 instance as origin, the following must be enabled
-  - [VPC DNS](https://docs.aws.amazon.com/vpc/latest/userguide/AmazonDNS-concepts.html#vpc-dns-support) attribute `enableDnsSupport` and `enableDnsHostnames`
-  - [Resource-based name (RBN)](https://docs.aws.amazon.com/vpc/latest/userguide/configure-subnets.html#subnet-settings) attribute `Enable resource name DNS A record on launch`
+- To use CloudFront with EC2 instance as origin, the [VPC DNS](https://docs.aws.amazon.com/vpc/latest/userguide/AmazonDNS-concepts.html#vpc-dns-support) attributes `enableDnsSupport` and `enableDnsHostnames` must be enabled.
 
 ## Deploying using CloudFormation console
 
-Download [Ollama-Server.yaml](Ollama-Server.yaml). 
+Download [Ollama-Server.yaml](Ollama-Server.yaml).
 
 *Use [Ollama-Server-noGPU.yaml](Ollama-Server-noGPU.yaml) if you do not want a GPU EC2 instance. Response from local Ollama models will be slow.*
 
@@ -97,7 +97,7 @@ EC2 Remote Administration
 
 - `ingressIPv4`: allowed IPv4 source prefix to remote administration services, e.g. `1.2.3.4/32`. You can get your source IP from [https://checkip.amazonaws.com](https://checkip.amazonaws.com). Default is `0.0.0.0/0`.
 - `ingressIPv6`: allowed IPv6 source prefix to remote administration services. Use `::1/128` to block all incoming IPv6 access. Default is `::/0`
-- `allowSSHport`: allow inbound SSH. Option does not affect [EC2 Instance Connect](https://aws.amazon.com/blogs/compute/new-using-amazon-ec2-instance-connect-for-ssh-access-to-your-ec2-instances/) access. Default is `Yes`
+- `allowSSHport`: allow inbound [SSH](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/connect-linux-inst-ssh.html). Option does not affect [EC2 Instance Connect](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-connect-methods.html) access. Default is `Yes`
 - `installDCV`: install graphical desktop environment and [Amazon DCV](https://aws.amazon.com/hpc/dcv/) server. Default is `No`
 
 *SSH and DCV inbound access are restricted to `ingressIPv4` and `ingressIPv6` IP prefixes.*
@@ -128,12 +128,11 @@ ALB HTTPS listener
 
 Amazon CloudFront
 
-- `enableCloudFront`: [create](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/distribution-web-creating-console.html) a [Amazon CloudFront](https://aws.amazon.com/cloudfront/) distribution to your EC2 instance or ALB. Associated charges are listed on [Amazon CloudFront pricing](https://aws.amazon.com/cloudfront/pricing/) page. Default is `No`
-- `originType`: either `Custom Origin` or `VPC Origin`. Most [AWS Regions](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/private-content-vpc-origins.html#vpc-origins-supported-regions) support [VPC Origins](https://aws.amazon.com/blogs/networking-and-content-delivery/introducing-cloudfront-virtual-private-cloud-vpc-origins-shield-your-web-applications-from-public-internet/), which allow CloudFront to deliver content even if your EC2 instance is in a VPC private subnet. Enable `assignStaticIP` if using `Custom origin` and `enableALB` is `No`. Default is `Custom Origin`
+- `enableCloudFront`: [create](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/distribution-web-creating-console.html) a [Amazon CloudFront](https://aws.amazon.com/cloudfront/) distribution to your EC2  instance or ALB. Associated charges are listed on [Amazon CloudFront pricing](https://aws.amazon.com/cloudfront/pricing/) page. Default is `No`
+- `originType`: either `Custom Origin` or `VPC Origin`. Most [AWS Regions](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/private-content-vpc-origins.html#vpc-origins-supported-regions) support [VPC Origins](https://aws.amazon.com/blogs/networking-and-content-delivery/introducing-cloudfront-virtual-private-cloud-vpc-origins-shield-your-web-applications-from-public-internet/), which allow CloudFront to deliver content even if your EC2 instance is in a VPC private subnet. Default is `Custom Origin`
 - `cloudFrontLogging`: enable CloudFront [standard logging](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/AccessLogs.html) to S3 bucket. Default is `No`
 
 *The EC2 or ALB origin must have a IPv4 address. Create a CloudFront distribution [manually](https://aws.amazon.com/blogs/networking-and-content-delivery/amazon-cloudfront-now-supports-ipv6-origins-for-end-to-end-ipv6-delivery/) if origin is IPv6 only*
-
 
 AWS Backup
 
@@ -150,14 +149,15 @@ It may take more than 20 minutes to provision the EC2 instance. After your stack
 
 The following are available on **Outputs** section
 
+- `EC2InstanceID`: EC2 Instance ID
 - `EC2console`: EC2 console URL to manage your EC2 instance
-- `EC2instanceConnect`: [EC2 Instance Connect](https://aws.amazon.com/blogs/compute/new-using-amazon-ec2-instance-connect-for-ssh-access-to-your-ec2-instances/) URL. Functionality is only available under [certain conditions](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/connect-linux-inst-eic.html)
+- `EC2instanceConnect`: [EC2 Instance Connect](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-connect-methods.html) URL. Functionality is only available under [certain conditions](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/connect-linux-inst-eic.html)
 - `EC2serialConsole`: [EC2 Serial Console](https://aws.amazon.com/blogs/aws/troubleshoot-boot-and-networking-issues-with-new-ec2-serial-console/) URL. Functionality is available under [certain conditions](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-serial-console-prerequisites.html).
-- `SSMsessionManager` or `SSMsessionManagerDCV`: [SSM Session Manager](https://aws.amazon.com/blogs/aws/new-session-manager/) URL
+- `SSMsessionManager` or `SSMsessionManagerDCV`: [SSM Session Manager](https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-sessions-start.html) URL
 
 If `installDCV` is `Yes`
 
-- `DCVwebConsole` : DCV web browser client URL. Native DCV clients can be downloaded from [https://www.amazondcv.com/](https://www.amazondcv.com/). Default password is EC2 instance ID. Use SSM session manager or EC2 instance connect to set `ubuntu` user password, and login as ubuntu.
+- `DcvURL` : DCV web browser and native client URL. Native DCV clients can be downloaded from [https://www.amazondcv.com/](https://www.amazondcv.com/). Default password is EC2 instance ID. Use SSM session manager or EC2 instance connect to set `ubuntu` user password, and login as ubuntu.
 
 #### Open WebUI
 
@@ -190,7 +190,7 @@ To troubleshoot any installation issue, you can view contents of the following l
 
 ### Managing models
 
-Refer to [Starting With Ollama](https://docs.openwebui.com/getting-started/quick-start/starting-with-ollama/#a-quick-and-efficient-way-to-download-models) for model management instructions. Ollama [site](https://ollama.com/search) provides a listing of available language models and their size (e.g. [DeepSeek](https://ollama.com/library/deepseek-r1/tags)). For best performance, ensure that model size is less than GPU memory size. You can refer to [EC2 Accelerated Computing page](https://aws.amazon.com/ec2/instance-types/#Accelerated_Computing) for GPU memory size specifications.
+Refer to [Starting With Ollama](https://docs.openwebui.com/getting-started/quick-start/starting-with-ollama/) for model management instructions. Ollama [site](https://ollama.com/search) provides a listing of available language models and their size (e.g. [DeepSeek](https://ollama.com/library/deepseek-r1/tags)). For best performance, ensure that model size is less than GPU memory size. You can refer to [EC2 Accelerated Computing page](https://aws.amazon.com/ec2/instance-types/#Accelerated_Computing) for GPU memory size specifications.
 
 ### Change EC2 instance type
 
@@ -230,9 +230,9 @@ If ALB is provisioned (`enableALB`), you can create a [HTTP](https://docs.aws.am
 
 ## Obtaining certificate for HTTPS
 
-Amazon CloudFront (`enableCloudFront`) [supports](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/using-https-viewers-to-cloudfront.html) HTTPS. You can use [AWS Certificate Manager](https://aws.amazon.com/certificate-manager/) to [request](https://docs.aws.amazon.com/acm/latest/userguide/acm-public-certificates.html) a public certificate for your own domain and [associate](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cnames-and-https-requirements.html) it with your CloudFront distribution.
+Amazon CloudFront (`enableCloudFront`) [supports](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/using-https-viewers-to-cloudfront.html) HTTPS and [alternative domain name](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/CNAMEs.html). You can use [AWS Certificate Manager](https://aws.amazon.com/certificate-manager/) to [request](https://docs.aws.amazon.com/acm/latest/userguide/acm-public-certificates.html) a non-exportable public certificate at [no additional cost](https://aws.amazon.com/certificate-manager/pricing/) and [associate](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cnames-and-https-requirements.html) it with your CloudFront distribution.
 
-The EC2 instance uses a self-signed certificate for HTTPS. You can [request and export](https://aws.amazon.com/blogs/security/aws-certificate-manager-now-supports-exporting-public-certificates/) public certificate from AWS Certificate Manager and install it on your EC2 instance. You can use [Certbot](https://certbot.eff.org/pages/about) to obtain and install [Let's Encrypt](https://letsencrypt.org/) certificate on your web server.
+The EC2 instance uses a self-signed certificate for HTTPS. You can [request and export](https://aws.amazon.com/blogs/security/aws-certificate-manager-now-supports-exporting-public-certificates/) public certificate from AWS Certificate Manager and install it on your EC2 instance. Alternatively, you can use [Certbot](https://certbot.eff.org/pages/about) to obtain and install [Let's Encrypt](https://letsencrypt.org/) certificate on your web server.
 
 ### Using Certbot
 
@@ -276,6 +276,7 @@ If you enable AWS Backup, you can restore your [EC2 instance](https://docs.aws.a
 
 ### Securing
 
+IAM credentials, database login, [HaRP shared key](https://docs.nextcloud.com/server/stable/admin_manual/exapps_management/DeployConfigurations.html#docker-deploy-daemon-harp) and other security credentials are located in `/home/ubuntu/nextcloud-credentials` file.
 To futher secure your EC2 instance, you may want to consider the following
 
 - Restrict remote administration access to your IP address only (`ingressIPv4` and `ingressIPv6`)
@@ -290,9 +291,12 @@ To futher secure your EC2 instance, you may want to consider the following
   - Use [Application Load Balancer](https://aws.amazon.com/elasticloadbalancing/application-load-balancer/) (`enableALB`) or  [Amazon CloudFront](https://aws.amazon.com/cloudfront/) (`enableCloudFront`) with [VPC Origin](https://aws.amazon.com/blogs/aws/introducing-amazon-cloudfront-vpc-origins-enhanced-security-and-streamlined-operations-for-your-applications/) for public internet access
   - Use [AWS Certificate Manager](https://aws.amazon.com/certificate-manager/) to [request a public HTTPS certificate](https://docs.aws.amazon.com/acm/latest/userguide/acm-public-certificates.html) and associate it with your [Application Load Balancer](https://repost.aws/knowledge-center/associate-acm-certificate-alb-nlb) or [CloudFront distribution](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cnames-and-https-requirements.html)
   - Use [AWS WAF](https://aws.amazon.com/waf/) to protect your [CloudFront distribution](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/distribution-web-awswaf.html) and/or [Application Load Balancer](https://repost.aws/knowledge-center/waf-protect-ec2-instance)
-- For Amazon CloudFront (`enableCloudFront`)
-  - Additional inbound HTTP security groups with [AWS-managed prefix list for Amazon CloudFront](https://aws.amazon.com/blogs/networking-and-content-delivery/limit-access-to-your-origins-using-the-aws-managed-prefix-list-for-amazon-cloudfront/) as source are created. You can remove public internet inbound (`0.0.0.0/0`) HTTP/HTTPS to your ALB and/or EC2 instance
-  - Consider [geo blocking](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/georestrictions.html) to control public internet access by geographic location
+
+- Use Amazon CloudFront (`enableCloudFront`) for performance and security
+  - Consider CloudFront [flat-rate pricing plans](https://aws.amazon.com/blogs/networking-and-content-delivery/introducing-flat-rate-pricing-plans-with-no-overages/) that combine CloudFront with multiple AWS services, and features [monthly price](https://aws.amazon.com/cloudfront/pricing/) with no overage charges regardless of whether your website goes viral or faces a DDoS attack
+  - Additional inbound HTTP security groups with [AWS-managed prefix list for Amazon CloudFront](https://aws.amazon.com/blogs/networking-and-content-delivery/limit-access-to-your-origins-using-the-aws-managed-prefix-list-for-amazon-cloudfront/) as source are created. Restrict EC2/ALB origin HTTP/HTTPS inbound access to CloudFront only by removing public internet inbound (`0.0.0.0/0`) from security group
+  - Install public HTTPS certificate on your ALB/EC2 origin. Enable [HTTPS communication](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/using-https-cloudfront-to-custom-origin.html#using-https-cloudfront-to-origin-distribution-setting) between CloudFront and origin. For custom origin, configure [origin domain name](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/distribution-web-values-specify.html#DownloadDistValuesDomainName) to match [certificate name](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cnames-and-https-requirements.html#https-requirements-domain-names-in-cert)
+  - Consider geo-restrction using [CloudFront](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/georestrictions.html) or [AWS WAF](https://docs.aws.amazon.com/waf/latest/developerguide/waf-rule-statement-type-geo-match.html) to control public internet access by geographic location
 - Enable [Amazon Inspector](https://aws.amazon.com/inspector/) to [scan EC2 instance](https://docs.aws.amazon.com/inspector/latest/user/scanning-ec2.html) for software vulnerabilities and unintended network exposure.
 - Enable [Amazon GuardDuty](https://aws.amazon.com/guardduty/) security monitoring service with [Runtime Monitoring](https://docs.aws.amazon.com/guardduty/latest/ug/how-runtime-monitoring-works-ec2.html) and [Malware Protection for EC2](https://docs.aws.amazon.com/guardduty/latest/ug/malware-protection.html)
 
