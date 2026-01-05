@@ -27,7 +27,7 @@ Metadata:
         Parameters:
           - installWebUI
           - bedrockRegion
-          - r53ZoneID
+          - enableR53acmeSupport
       - Label:
           default: EC2 Instance
         Parameters:
@@ -44,7 +44,7 @@ Metadata:
           - displayPublicIP
           - assignStaticIP
       - Label:
-          default: EC2 Remote administration
+          default: EC2 Remote Administration
         Parameters:
           - ingressIPv4
           - ingressIPv6
@@ -89,13 +89,13 @@ Metadata:
         default: "Install Web UI"
       bedrockRegion:
         default: "AWS Bedrock Region"
-      r53ZoneID:
-        default: "Route 53 hosted zone ID to grant access to"
+      enableR53acmeSupport:
+        default: "Enable Route 53 ACME protocol DNS-01 challenge support"
 
       ec2Name:
-        default: "EC2 instance name"
+        default: "Instance name"
       ec2KeyPair:
-        default: "Key pair"
+        default: "Keypair name"
       osVersion:
         default: "OS version and architecture"
       instanceType:
@@ -138,9 +138,9 @@ Metadata:
         default: "HSTS (HTTP Strict Transport Security) header value. Leave blank not to send"
 
       ingressIPv4:
-        default: "Allowed source prefix (IPv4) to SSH/DCV"
+        default: "Allowed source prefix (IPv4)"
       ingressIPv6:
-        default: "Allowed source prefix (IPv6) to SSH/DCV"
+        default: "Allowed source prefix (IPv6)"
       allowSSHport:
         default: "Allow SSH from network"
       installDCV:
@@ -170,10 +170,13 @@ Parameters:
       - "Yes"
       - "No"
     Default: "Yes"
-  r53ZoneID:
+  enableR53acmeSupport:
     Type: String
-    Description: https://console.aws.amazon.com/route53/hostedzones https://certbot-dns-route53.readthedocs.io/
-    Default: "*"
+    Description: https://letsencrypt.org/docs/challenge-types https://certbot-dns-route53.readthedocs.io/
+    AllowedValues:
+      - "Yes"
+      - "No"
+    Default: "Yes"
 
   bedrockRegion:
     Type: String
@@ -922,7 +925,7 @@ Conditions:
   createSgSSH: !Equals [!Ref allowSSHport, "Yes"]
   createBackup: !Equals [!Ref enableBackup, "Yes"]
 
-  hasR53Zone: !Not [!Equals [!Ref r53ZoneID, ""]]
+  hasR53Zone: !Equals [!Ref enableR53acmeSupport, "Yes"]
 
   installDCV: !Equals [!Ref installDCV, "Yes"]
 
@@ -1299,7 +1302,7 @@ Resources:
                 - Effect: Allow
                   Action:
                     - route53:ChangeResourceRecordSets
-                  Resource: !Sub arn:${AWS::Partition}:route53:::hostedzone/${r53ZoneID}
+                  Resource: !Sub arn:${AWS::Partition}:route53:::hostedzone/*
                   Condition:
                     IpAddress:
                       aws:SourceIp: 0.0.0.0/0
@@ -2815,8 +2818,7 @@ Resources:
           - createALB
           - !Sub ${AWS::StackName}-${alb.LoadBalancerName}
           - !Sub ${AWS::StackName}-${ec2Instance}
-        OriginProtocolPolicy:
-          !If [createHttpRedirectListener, https-only, http-only]
+        OriginProtocolPolicy: http-only
         OriginSSLProtocols:
           - TLSv1.2
       Tags:
@@ -3032,7 +3034,7 @@ Outputs:
     Description: EC2 Serial Console
     Value: !Sub "https://${AWS::Region}.console.aws.amazon.com/ec2-instance-connect/ssh?connType=serial&instanceId=${ec2Instance}&serialPort=0#/"
 
-  EC2InstanceID:
+  EC2instanceID:
     Description: EC2 Instance ID
     Value: !Ref ec2Instance
 
@@ -3048,7 +3050,7 @@ Outputs:
             DefaultValue: "console.aws.amazon.com",
           ]
 
-  DcvURL:
+  DCVUrl:
     Condition: installDCV
     Description: DCV URL (login as ubuntu)
     Value: !Sub
@@ -3070,7 +3072,7 @@ Outputs:
         !Sub "https://${ec2Instance.PrivateIp}",
       ]
 
-  CloudFrontURL:
+  CloudFrontUrl:
     Condition: createCloudFront
     Description: CloudFront distribution URL
     Value:

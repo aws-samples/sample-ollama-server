@@ -69,13 +69,13 @@ Login to AWS [CloudFormation console](https://console.aws.amazon.com/cloudformat
 
 ### CloudFormation Parameters
 
-In most cases, the default values are sufficient. Do verify instance type [availability](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-discovery.html). You will need to specify values for `vpcID`, `subnetID`, `ec2KeyPair` and `albSubnets`. For security reasons, configure `ingressIPv4` and `ingressIPv6` to your IP address.
+The default values will deploy EC2 instance with CloudFront. Do verify instance type [availability](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-discovery.html). You will need to specify values for `vpcID`, `subnetID`, `ec2KeyPair` and `albSubnets`. For security reasons, configure `ingressIPv4` and `ingressIPv6` to your IP address.
 
 Ollama
 
 - `installWebUI`: install Open WebUI. Default is `Yes`
 - `bedrockRegion`: [AWS Region](https://docs.aws.amazon.com/bedrock/latest/userguide/models-regions.html) to use for Bedrock model access. Usage charges are listed on [Amazon Bedrock pricing](https://aws.amazon.com/bedrock/pricing/) page. Default is `us-west-2 (US West - Oregon)`
-- `r53ZoneID` : [Amazon Route 53](https://aws.amazon.com/route53/) hosted zone ID to grant [EC2 IAM Role](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/iam-roles-for-amazon-ec2.html) access to. To be used for [Route 53 DNS-01 challenge](https://certbot-dns-route53.readthedocs.io/en/stable/) by [Certbot](https://eff-certbot.readthedocs.io/en/stable/intro.html) to obtain HTTPS certificate for Nginx web server. Permission is restricted to **_acme-challenge.\*** TXT DNS records using [resource record set permissions](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/resource-record-sets-permissions.html). Set empty string for no access. Default is `*` which will grant access to all Route 53 zones in your AWS account.
+- `enableR53acmeSupport`: grant EC2 instance IAM permission for [ACME clients](https://letsencrypt.org/docs/client-options/) such as [Certbot](https://certbot.eff.org/) to use [DNS-01 challenge](https://letsencrypt.org/docs/challenge-types/#dns-01-challenge) with your [Amazon Route 53](https://aws.amazon.com/route53/) [public hosted zone](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/AboutHZWorkingWith.html) to obtain free HTTPS/TLS certificates. For security reasons, DNS record access is restricted to **_acme-challenge.\*** TXT records using [resource record set permissions](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/resource-record-sets-permissions.html). Refer to section [Obtaining certificate for HTTPS](#obtaining-certificate-for-https) for more details. Default is `Yes`
   - *Route 53 must be [configured](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/dns-configuring.html) as DNS service for your domain.*
 
 EC2 Instance
@@ -149,15 +149,15 @@ It may take more than 20 minutes to provision the EC2 instance. After your stack
 
 The following are available on **Outputs** section
 
-- `EC2InstanceID`: EC2 Instance ID
+- `EC2instanceID`: EC2 Instance ID
 - `EC2console`: EC2 console URL to manage your EC2 instance
 - `EC2instanceConnect`: [EC2 Instance Connect](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-connect-methods.html) URL. Functionality is only available under [certain conditions](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/connect-linux-inst-eic.html)
-- `EC2serialConsole`: [EC2 Serial Console](https://aws.amazon.com/blogs/aws/troubleshoot-boot-and-networking-issues-with-new-ec2-serial-console/) URL. Functionality is available under [certain conditions](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-serial-console-prerequisites.html).
+- `EC2serialConsole`: [EC2 Serial Console](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/connect-to-serial-console.html) URL. Functionality is available under [certain conditions](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-serial-console-prerequisites.html).
 - `SSMsessionManager` or `SSMsessionManagerDCV`: [SSM Session Manager](https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-sessions-start.html) URL
 
 If `installDCV` is `Yes`
 
-- `DcvURL` : DCV web browser and native client URL. Native DCV clients can be downloaded from [https://www.amazondcv.com/](https://www.amazondcv.com/). Default password is EC2 instance ID. Use SSM session manager or EC2 instance connect to set `ubuntu` user password, and login as ubuntu.
+- `DCVUrl` : DCV web browser and native client URL. Native DCV clients can be downloaded from [https://www.amazondcv.com/](https://www.amazondcv.com/). Default password is EC2 instance ID. Use SSM session manager or EC2 instance connect to set `ubuntu` user password, and login as ubuntu.
 
 #### Open WebUI
 
@@ -173,7 +173,7 @@ If `enableALB` is `Yes`
 If `enableCloudFront` is `Yes`
 
 - `CloudFrontConsole` : CloudFront console URL link. Some adjustment of your CloudFront distribution settings may be required
-- `CloudFrontURL` : CloudFront distribution URL, e.g. `https://d111111abcdef8.cloudfront.net`
+- `CloudFrontUrl` : CloudFront distribution URL, e.g. `https://d111111abcdef8.cloudfront.net`
 
 \** *Go to EC2, ALB, or CloudFront URL and create an administrative account immediately*
 
@@ -250,7 +250,7 @@ Ensure you have a domain name whose DNS entry resolves to your EC2 instance IP a
 
 ### Option 2: Route 53 plugin
 
-- The [certbot-dns-route53](https://certbot-dns-route53.readthedocs.io/en/stable/) option requires your DNS to be hosted by Route 53. It supports wildcard certificates and domain names that resolve to private IP addresses.  Ensure that Route 53 zone access is granted by specifying `r53ZoneID` value. From terminal, run the below command and follow instructions.
+- The [certbot-dns-route53](https://certbot-dns-route53.readthedocs.io/en/stable/) option requires your DNS to be hosted by Route 53. It supports wildcard certificates and domain names that resolve to private IP addresses.  Ensure that Route 53 zone access is granted through `enableR53acmeSupport`. From terminal, run the below command based on installed web server type and follow instructions.
 
   ```
   sudo certbot --dns-route53 --installer nginx
@@ -276,9 +276,9 @@ If you enable AWS Backup, you can restore your [EC2 instance](https://docs.aws.a
 
 ### Securing
 
-IAM credentials, database login, [HaRP shared key](https://docs.nextcloud.com/server/stable/admin_manual/exapps_management/DeployConfigurations.html#docker-deploy-daemon-harp) and other security credentials are located in `/home/ubuntu/nextcloud-credentials` file.
 To futher secure your EC2 instance, you may want to consider the following
 
+- Set a strong `ubuntu` user password
 - Restrict remote administration access to your IP address only (`ingressIPv4` and `ingressIPv6`)
 - Disable SSH access from public internet (`allowSSHport`)
   - Use [EC2 Instance Connect](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-connect-methods.html#ec2-instance-connect-connecting-console) or [SSM Session Manager](https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-sessions-start.html#start-ec2-console) for in-browser terminal access, or
@@ -291,7 +291,6 @@ To futher secure your EC2 instance, you may want to consider the following
   - Use [Application Load Balancer](https://aws.amazon.com/elasticloadbalancing/application-load-balancer/) (`enableALB`) or  [Amazon CloudFront](https://aws.amazon.com/cloudfront/) (`enableCloudFront`) with [VPC Origin](https://aws.amazon.com/blogs/aws/introducing-amazon-cloudfront-vpc-origins-enhanced-security-and-streamlined-operations-for-your-applications/) for public internet access
   - Use [AWS Certificate Manager](https://aws.amazon.com/certificate-manager/) to [request a public HTTPS certificate](https://docs.aws.amazon.com/acm/latest/userguide/acm-public-certificates.html) and associate it with your [Application Load Balancer](https://repost.aws/knowledge-center/associate-acm-certificate-alb-nlb) or [CloudFront distribution](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cnames-and-https-requirements.html)
   - Use [AWS WAF](https://aws.amazon.com/waf/) to protect your [CloudFront distribution](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/distribution-web-awswaf.html) and/or [Application Load Balancer](https://repost.aws/knowledge-center/waf-protect-ec2-instance)
-
 - Use Amazon CloudFront (`enableCloudFront`) for performance and security
   - Consider CloudFront [flat-rate pricing plans](https://aws.amazon.com/blogs/networking-and-content-delivery/introducing-flat-rate-pricing-plans-with-no-overages/) that combine CloudFront with multiple AWS services, and features [monthly price](https://aws.amazon.com/cloudfront/pricing/) with no overage charges regardless of whether your website goes viral or faces a DDoS attack
   - Additional inbound HTTP security groups with [AWS-managed prefix list for Amazon CloudFront](https://aws.amazon.com/blogs/networking-and-content-delivery/limit-access-to-your-origins-using-the-aws-managed-prefix-list-for-amazon-cloudfront/) as source are created. Restrict EC2/ALB origin HTTP/HTTPS inbound access to CloudFront only by removing public internet inbound (`0.0.0.0/0`) from security group
