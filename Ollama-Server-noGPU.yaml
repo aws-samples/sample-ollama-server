@@ -182,6 +182,8 @@ Parameters:
     Type: String
     Description: https://docs.aws.amazon.com/bedrock/latest/userguide/models-regions.html
     AllowedValues:
+      - af-south-1 (Africa -Cape Town) 
+
       - ap-east-2 (Asia Pacific - Taipei)
 
       - ap-northeast-1 (Asia Pacific - Tokyo)
@@ -199,6 +201,7 @@ Parameters:
       - ap-southeast-7 (Asia Pacific - Thailand)
 
       - ca-central-1 (Canada - Central)
+      - ca-west-1 (Canada West - Calgary)
 
       - eu-central-1 (Europe - Frankfurt)
       - eu-central-2 (Europe - Zurich)
@@ -215,6 +218,9 @@ Parameters:
       - il-central-1 (Israel - Tel Aviv)
 
       - me-central-1 (Middle East - UAE)
+      - me-south-1 (Middle East - Bahrain)
+
+      - mx-central-1 (Mexico - Central)
 
       - sa-east-1 (South America - São Paulo)
 
