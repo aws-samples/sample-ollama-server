@@ -182,7 +182,7 @@ Parameters:
     Type: String
     Description: https://docs.aws.amazon.com/bedrock/latest/userguide/models-regions.html
     AllowedValues:
-      - af-south-1 (Africa -Cape Town) 
+      - af-south-1 (Africa -Cape Town)
 
       - ap-east-2 (Asia Pacific - Taipei)
 
@@ -1986,27 +1986,75 @@ Resources:
           files:
             "/etc/nginx/sites-available/reverse-proxy":
               content: |
-                # https://docs.openwebui.com/tutorials/https-nginx/
+                # https://docs.openwebui.com/tutorials/https/nginx
                 server {                      
                   # HTTP
                   listen 80 default_server;
                   listen [::]:80 default_server;
+
                   # HTTPS
                   listen 443 ssl default_server;
                   listen [::]:443 ssl default_server;
                   include snippets/snakeoil.conf;
-                  location / {
+
+                  # Redirect HTTP to HTTPS if not CloudFront
+                  set $and_condition 1;
+                  if ($http_x_amz_cf_id != "") { set $and_condition 0; }
+                  if ($scheme != "http") { set $and_condition 0; }
+                  if ($and_condition = 1) {
+                    return 301 https://$host$request_uri;
+                  }
+
+                  location ~* ^/(auth|api|oauth|admin|signin|signup|signout|login|logout|sso)/ {
                       proxy_pass http://localhost:8080;
-                      # Add WebSocket support (Necessary for version 0.5.0 and up)
+
                       proxy_http_version 1.1;
                       proxy_set_header Upgrade $http_upgrade;
                       proxy_set_header Connection "upgrade";
+
                       proxy_set_header Host $host;
                       proxy_set_header X-Real-IP $remote_addr;
                       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
                       proxy_set_header X-Forwarded-Proto $scheme;
-                      # (Optional) Disable proxy buffering for better streaming response from models
+
                       proxy_buffering off;
+                      client_max_body_size 20M;
+                      proxy_read_timeout 10m;
+
+                      # Disable caching for auth endpoints
+                      proxy_no_cache 1;
+                      proxy_cache_bypass 1;
+                      add_header Cache-Control "no-store, no-cache, must-revalidate" always;
+                      expires -1;
+                  }
+
+                  location ~* \.(css|jpg|jpeg|png|gif|ico|svg|woff|woff2|ttf|eot)$ {
+                      proxy_pass http://localhost:8080;
+                      proxy_http_version 1.1;
+                      proxy_set_header Host $host;
+
+                      expires 7d;
+                      add_header Cache-Control "public, immutable";
+                  }
+
+                  location / {
+                    proxy_pass http://localhost:8080;
+                    # Add WebSocket support (Necessary for version 0.5.0 and up)
+                    proxy_http_version 1.1;
+                    proxy_set_header Upgrade $http_upgrade;
+                    proxy_set_header Connection "upgrade";
+
+                    proxy_set_header Host $host;
+                    proxy_set_header X-Real-IP $remote_addr;
+                    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                    proxy_set_header X-Forwarded-Proto $scheme;
+
+                    proxy_buffering off;
+
+                    client_max_body_size 20M;
+                    proxy_read_timeout 10m;
+
+                    add_header Cache-Control "public, max-age=300, must-revalidate";
                   }
                 }
               mode: "000644"
