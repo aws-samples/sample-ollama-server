@@ -93,11 +93,11 @@ Metadata:
         default: "Enable Route 53 ACME protocol DNS-01 challenge support"
 
       ec2Name:
-        default: "Instance name"
+        default: "EC2 instance name"
       ec2KeyPair:
-        default: "Keypair name"
+        default: "Key pair"
       osVersion:
-        default: "OS version and architecture"
+        default: "OS version and processor architecture"
       instanceType:
         default: "Instance type (x86_64 or arm64). Verify availability at https://console.aws.amazon.com/ec2/#InstanceTypes"
       ec2TerminationProtection:
@@ -297,17 +297,17 @@ Parameters:
       - g6e.24xlarge (L40S - 4 x 48 GB GPU memory)
       - g6e.48xlarge (L40S - 8 x 48 GB GPU memory)
 
+      - g6f.large (L4 - 3 GB GPU memory)
+      - g6f.xlarge (L4 - 3 GB GPU memory)
+      - g6f.2xlarge (L4 - 6 GB GPU memory)
+      - g6f.4xlarge (L4 - 12 GB GPU memory)
+
       - g7e.2xlarge (RTX PRO Server 6000 - 96 GB GPU memory)
       - g7e.4xlarge (RTX PRO Server 6000 - 96 GB GPU memory)
       - g7e.8xlarge (RTX PRO Server 6000 - 96 GB GPU memory)
       - g7e.12xlarge (RTX PRO Server 6000 - 2 x 96 GB GPU memory)
       - g7e.24xlarge (RTX PRO Server 6000 - 4 x 96 GB GPU memory)
       - g7e.48xlarge (RTX PRO Server 6000 - 8 x 96 GB GPU memory)
-
-      - g6f.large (L4 - 3 GB GPU memory)
-      - g6f.xlarge (L4 - 3 GB GPU memory)
-      - g6f.2xlarge (L4 - 6 GB GPU memory)
-      - g6f.4xlarge (L4 - 12 GB GPU memory)
 
       - gr6.4xlarge (L4 - 24 GB GPU memory)
       - gr6.8xlarge (L4 - 24 GB GPU memory)
@@ -353,7 +353,7 @@ Parameters:
     ConstraintDescription: Select a Subnet
   displayPublicIP:
     Type: String
-    Description: Select No if EC2 has no public IP
+    Description: Select No if instance has no public IPv4 address
     AllowedValues:
       - "Yes"
       - "No"
@@ -1303,7 +1303,7 @@ Resources:
           - !Ref AWS::NoValue
         - !If
           - hasR53Zone
-          - PolicyName: Route53CertbotAccess
+          - PolicyName: R53acmeAccess
             PolicyDocument: # Certbot dns_route53 : https://certbot-dns-route53.readthedocs.io/en/stable/
               Version: "2012-10-17"
               Statement: # https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/specifying-rrset-conditions.html
@@ -1834,6 +1834,7 @@ Resources:
               group: "root"
             "/etc/systemd/system/systemd-networkd-wait-online.service.d/override.conf":
               content: |
+
                 [Service]
                 ExecStart=
                 ExecStart=/usr/lib/systemd/systemd-networkd-wait-online --timeout=3
@@ -1846,6 +1847,7 @@ Resources:
                 #!/bin/bash
                 mkdir -p /tmp/cfn
                 cd /tmp/cfn
+                export DEBIAN_FRONTEND=noninteractive
 
                 # Change password
                 PWD=$(cat /var/lib/cloud/data/instance-id)
@@ -1874,6 +1876,7 @@ Resources:
                 apt-get install -q -y dkms
 
                 # Kernel headers for GPU and USB remotization
+                apt-get install -q -y linux-image-aws
                 apt-get install -q -y linux-headers-aws
                 apt-get install -q -y linux-modules-extra-aws
                 apt-get install -q -y usbutils
@@ -1934,6 +1937,7 @@ Resources:
                 #!/bin/bash
                 mkdir -p /tmp/cfn
                 cd /tmp/cfn
+                export DEBIAN_FRONTEND=noninteractive
 
                 # Update OS
                 apt-get update -q
@@ -2140,7 +2144,7 @@ Resources:
                     ./NVIDIA-Linux-x86_64*.run -s --kernel-source-path=/lib/modules/$KERNEL_VERSION/build --kernel-name=$KERNEL_VERSION --skip-module-load
                     dkms autoinstall
                   else
-                    ./NVIDIA-Linux-x86_64*.run -s
+                    ./NVIDIA-Linux-x86_64*.run -s --skip-module-load
                   fi
 
                   echo "options nvidia NVreg_EnableGpuFirmware=0" | tee --append /etc/modprobe.d/nvidia.conf
