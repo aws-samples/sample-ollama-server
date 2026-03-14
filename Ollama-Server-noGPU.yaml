@@ -93,11 +93,11 @@ Metadata:
         default: "Enable Route 53 ACME protocol DNS-01 challenge support"
 
       ec2Name:
-        default: "Instance name"
+        default: "EC2 instance name"
       ec2KeyPair:
-        default: "Keypair name"
+        default: "Key pair"
       osVersion:
-        default: "OS version and architecture"
+        default: "OS version and processor architecture"
       instanceType:
         default: "Instance type (x86_64 or arm64). Verify availability at https://console.aws.amazon.com/ec2/#InstanceTypes"
       ec2TerminationProtection:
@@ -282,7 +282,7 @@ Parameters:
     ConstraintDescription: Select a Subnet
   displayPublicIP:
     Type: String
-    Description: Select No if EC2 has no public IP
+    Description: Select No if instance has no public IPv4 address
     AllowedValues:
       - "Yes"
       - "No"
@@ -1232,7 +1232,7 @@ Resources:
           - !Ref AWS::NoValue
         - !If
           - hasR53Zone
-          - PolicyName: Route53CertbotAccess
+          - PolicyName: R53acmeAccess
             PolicyDocument: # Certbot dns_route53 : https://certbot-dns-route53.readthedocs.io/en/stable/
               Version: "2012-10-17"
               Statement: # https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/specifying-rrset-conditions.html
@@ -1685,7 +1685,7 @@ Resources:
                 apt-get upgrade -q -y
 
                 # Add DCV ports
-                if (systemctl list-units | grep -q ufw); then
+                if (systemctl status ufw | grep -q ufw); then
                   if [ "${installDCV}" = "Yes" ]; then
                     ufw allow 8443/tcp
                     ufw allow 8443/udp
@@ -1707,12 +1707,61 @@ Resources:
                     systemctl daemon-reload
                     ;;
                 esac
-                               
-                /usr/local/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource ec2Instance --region ${AWS::Region}
+
+                # IP address cert
+                if [ "${displayPublicIP}" = "Yes" ]; then
+                  # Some Regions create Elastic IP after EC2 instance is created
+                  python3 /usr/local/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource ec2Instance --region ${AWS::Region}
+                  sleep 45
+
+                  WEB_ROOT="/var/www/html/"
+
+                  IP_ADDR=$(curl -s checkip.amazonaws.com)
+                  certbot certonly -n --agree-tos --preferred-profile shortlived --webroot --webroot-path $WEB_ROOT --ip-address $IP_ADDR
+
+                  if [ -d "/etc/letsencrypt/live/$IP_ADDR/" ]; then
+                    # Update web server cert
+                    rm -f /etc/ssl/certs/ssl-cert-snakeoil.pem
+                    rm -f /etc/ssl/private/ssl-cert-snakeoil.key
+                    ln -s -f /etc/letsencrypt/live/$IP_ADDR/fullchain.pem /etc/ssl/certs/ssl-cert-snakeoil.pem
+                    ln -s -f /etc/letsencrypt/live/$IP_ADDR/privkey.pem /etc/ssl/private/ssl-cert-snakeoil.key
+
+                    systemctl reload nginx
+
+                    # DCV TLS cert: https://docs.aws.amazon.com/dcv/latest/adminguide/manage-cert.html
+                    if [ "${installDCV}" = "Yes" ]; then
+                      cp -f /etc/letsencrypt/live/$IP_ADDR/fullchain.pem /etc/dcv/dcv.pem
+                      cp -f /etc/letsencrypt/live/$IP_ADDR/privkey.pem /etc/dcv/dcv.key
+                      chown dcv /etc/dcv/dcv.pem /etc/dcv/dcv.key
+                      chmod 600 /etc/dcv/dcv.pem /etc/dcv/dcv.key
+
+                      # post cert renewal hook
+                      mv /opt/dcv-renew-cert.sh /etc/letsencrypt/renewal-hooks/post/
+                    fi
+                  fi
+                fi
+                if [ -f "/opt/dcv-renew-cert.sh" ]; then
+                  rm /opt/dcv-renew-cert.sh
+                fi
+
+                python3 /usr/local/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource ec2Instance --region ${AWS::Region}
 
                 rm -f /etc/systemd/system/dcv-post-reboot.service
                 rm -f ${!0}
                 systemctl daemon-reload
+              mode: "000755"
+              owner: "root"
+              group: "root"
+            "/opt/dcv-renew-cert.sh":
+              content: |
+                #!/bin/bash
+                CERT_FOLDER=$(curl -s checkip.amazonaws.com)
+                if [ -d "/etc/letsencrypt/live/$CERT_FOLDER/" ]; then
+                  cp -f /etc/letsencrypt/live/$CERT_FOLDER/fullchain.pem /etc/dcv/dcv.pem
+                  cp -f /etc/letsencrypt/live/$CERT_FOLDER/privkey.pem /etc/dcv/dcv.key
+                  chown dcv /etc/dcv/dcv.pem /etc/dcv/dcv.key
+                  chmod 600 /etc/dcv/dcv.pem /etc/dcv/dcv.key
+                fi
               mode: "000755"
               owner: "root"
               group: "root"
@@ -1750,6 +1799,7 @@ Resources:
               group: "root"
             "/etc/systemd/system/systemd-networkd-wait-online.service.d/override.conf":
               content: |
+
                 [Service]
                 ExecStart=
                 ExecStart=/usr/lib/systemd/systemd-networkd-wait-online --timeout=3
@@ -1762,6 +1812,7 @@ Resources:
                 #!/bin/bash
                 mkdir -p /tmp/cfn
                 cd /tmp/cfn
+                export DEBIAN_FRONTEND=noninteractive
 
                 # Change password
                 PWD=$(cat /var/lib/cloud/data/instance-id)
@@ -1791,6 +1842,7 @@ Resources:
                 apt-get install -q -y dkms
 
                 # Kernel headers for GPU and USB remotization
+                apt-get install -q -y linux-image-aws
                 apt-get install -q -y linux-headers-aws
                 apt-get install -q -y linux-modules-extra-aws
                 apt-get install -q -y usbutils
@@ -1810,6 +1862,7 @@ Resources:
                 usermod -aG docker ubuntu
 
                 # AWS CLI: https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html
+                apt-get remove -q -y awscli
                 sudo snap install aws-cli --classic
                 if [ -e /snap/bin/aws ]; then
                   rm -f /home/ubuntu/update-awscli
@@ -1851,6 +1904,7 @@ Resources:
                 #!/bin/bash
                 mkdir -p /tmp/cfn
                 cd /tmp/cfn
+                export DEBIAN_FRONTEND=noninteractive
 
                 # Update OS
                 apt-get update -q
@@ -1987,22 +2041,36 @@ Resources:
             "/etc/nginx/sites-available/reverse-proxy":
               content: |
                 # https://docs.openwebui.com/tutorials/https/nginx
-                server {                      
+                server {
+                  root /var/www/html;
+                    
                   # HTTP
                   listen 80 default_server;
                   listen [::]:80 default_server;
 
                   # HTTPS
-                  listen 443 ssl default_server;
-                  listen [::]:443 ssl default_server;
+                  listen 443 ssl http2 default_server;
+                  listen [::]:443 http2 ssl default_server;
                   include snippets/snakeoil.conf;
 
-                  # Redirect HTTP to HTTPS if not CloudFront
-                  set $and_condition 1;
-                  if ($http_x_amz_cf_id != "") { set $and_condition 0; }
-                  if ($scheme != "http") { set $and_condition 0; }
-                  if ($and_condition = 1) {
+                  ssl_protocols TLSv1.3;
+                  ssl_prefer_server_ciphers on;
+
+                  # Redirect HTTP to HTTPS if not ACME HTTP-01 challenge or CloudFront CDN
+                  set $redirect_condition 1;
+                  if ($scheme != "http") { set $redirect_condition 0; }
+                  if ($http_x_amz_cf_id != "") { set $redirect_condition 0; }
+                  if ($request_uri ~ "^/\.well-known/")  { set $redirect_condition 0; }
+                  if ($redirect_condition = 1) {
                     return 301 https://$host$request_uri;
+                  }
+
+                  # ACME HTTP-01 challenge
+                  location ^~ /.well-known/acme-challenge/ {
+                    default_type "text/plain";
+                  }
+                  location = /.well-known/acme-challenge/ {
+                    return 404;
                   }
 
                   location ~* ^/(auth|api|oauth|admin|signin|signup|signout|login|logout|sso)/ {

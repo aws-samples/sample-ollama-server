@@ -28,6 +28,7 @@ Template provides the following features
   - [Open WebUI](https://openwebui.com/) web interface for interacting with [local Ollama](https://ollama.com/library) and [remote Bedrock](https://docs.aws.amazon.com/bedrock/latest/userguide/models-supported.html) models
     - [Amazon Bedrock](https://aws.amazon.com/bedrock/) model access through [LiteLLM proxy server](https://www.litellm.ai/)
     - [Image generation](https://docs.openwebui.com/tutorials/images/#using-image-generation) with [Stable Diffusion 3.5 Large](https://aws.amazon.com/blogs/aws/stable-diffusion-3-5-large-is-now-available-in-amazon-bedrock/) or [Amazon Nova Canvas](https://aws.amazon.com/blogs/machine-learning/exploring-creative-possibilities-a-visual-guide-to-amazon-nova-canvas/) model (experimental)
+    - [Secure HTTPS access](https://docs.openwebui.com/reference/https/) using Nginx with valid [IP address certificate](https://letsencrypt.org/2026/01/15/6day-and-ip-general-availability)
 - Remote Administration
   - [Amazon DCV](https://aws.amazon.com/hpc/dcv/) remote display protocol server for graphical desktop access (optional)
   - [SSM Session Manager](https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager.html)  secure shell access
@@ -230,9 +231,11 @@ If ALB is provisioned (`enableALB`), you can create a [HTTP](https://docs.aws.am
 
 ## Obtaining certificate for HTTPS
 
+Template will install a valid [IPv4 address certificate](https://letsencrypt.org/2026/03/11/shorter-certs-certbot) for HTTPS and DCV if `displayPublicIP` is `Yes`. IP address certificates are valid for 160 hours, just over six days, and [Certbot](https://letsencrypt.org/2026/03/11/shorter-certs-certbot) will attempt to renew them before expiry. To ensure proper operation, ensure `assignStaticIP` is set to `Yes`.
+
 Amazon CloudFront (`enableCloudFront`) [supports](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/using-https-viewers-to-cloudfront.html) HTTPS and [alternative domain name](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/CNAMEs.html). You can use [AWS Certificate Manager](https://aws.amazon.com/certificate-manager/) to [request](https://docs.aws.amazon.com/acm/latest/userguide/acm-public-certificates.html) a non-exportable public certificate at [no additional cost](https://aws.amazon.com/certificate-manager/pricing/) and [associate](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/cnames-and-https-requirements.html) it with your CloudFront distribution.
 
-The EC2 instance uses a self-signed certificate for HTTPS. You can [request and export](https://aws.amazon.com/blogs/security/aws-certificate-manager-now-supports-exporting-public-certificates/) public certificate from AWS Certificate Manager and install it on your EC2 instance. Alternatively, you can use [Certbot](https://certbot.eff.org/pages/about) to obtain and install [Let's Encrypt](https://letsencrypt.org/) certificate on your web server.
+You can [request and export](https://aws.amazon.com/blogs/security/aws-certificate-manager-now-supports-exporting-public-certificates/) public Domain Validated (DV)  certificate from AWS Certificate Manager and install it on your EC2 instance. You can also use [Certbot](https://certbot.eff.org/pages/about) to obtain and install free [Let's Encrypt](https://letsencrypt.org/) DV certificate on your web server as follows.
 
 ### Using Certbot
 
