@@ -28,7 +28,7 @@ Template provides the following features
   - [Open WebUI](https://openwebui.com/) web interface for interacting with [local Ollama](https://ollama.com/library) and [remote Bedrock](https://docs.aws.amazon.com/bedrock/latest/userguide/models-supported.html) models
     - [Amazon Bedrock](https://aws.amazon.com/bedrock/) model access through [LiteLLM proxy server](https://www.litellm.ai/)
     - [Image generation](https://docs.openwebui.com/tutorials/images/#using-image-generation) with [Stable Diffusion 3.5 Large](https://aws.amazon.com/blogs/aws/stable-diffusion-3-5-large-is-now-available-in-amazon-bedrock/) or [Amazon Nova Canvas](https://aws.amazon.com/blogs/machine-learning/exploring-creative-possibilities-a-visual-guide-to-amazon-nova-canvas/) model (experimental)
-    - [Secure HTTPS access](https://docs.openwebui.com/reference/https/) using Nginx with valid [IP address certificate](https://letsencrypt.org/2026/01/15/6day-and-ip-general-availability)
+    - [Secure HTTPS access](https://docs.openwebui.com/reference/https/) using Nginx with valid [IP address certificate](#obtaining-certificate-for-https)
 - Remote Administration
   - [Amazon DCV](https://aws.amazon.com/hpc/dcv/) remote display protocol server for graphical desktop access (optional)
   - [SSM Session Manager](https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager.html)  secure shell access
